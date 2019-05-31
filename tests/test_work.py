@@ -23,26 +23,26 @@ class TestParseRange(unittest.TestCase):
             ('four', 0)])
 
     def test_parse_range_empty(self):
-        range = ''
-        self.assertEqual(self.work.parse_range(range), [])
+        page_range = ''
+        self.assertEqual(self.work.parse_range(page_range), [])
 
     def test_parse_range_single_page(self):
-        range = 'two'
-        self.assertEqual(self.work.parse_range(range), [2])
+        page_range = 'two'
+        self.assertEqual(self.work.parse_range(page_range), [2])
 
     def test_parse_range_single_range(self):
-        range = 'one-three'
+        page_range = 'one-three'
         self.assertEqual(
-            self.work.parse_range(range),
+            self.work.parse_range(page_range),
             [PageRange([
                 ('one', 3),
                 ('two', 2),
                 ('three', 1)])])
 
     def test_parse_range_multiple_mixed(self):
-        range = 'one three-four'
+        page_range = 'one three-four'
         self.assertEqual(
-            self.work.parse_range(range),
+            self.work.parse_range(page_range),
             [
                 3,
                 PageRange([

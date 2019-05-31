@@ -128,8 +128,8 @@ class Work(object):
 
         articles = LstFile.from_file(os.path.join(base_path, 'Articles.lst'))
         disambiguation_counter = Work.setup_disambiguation_counter(chapters)
-        for html_name, title, range in articles.data:
-            page_list = self.parse_range(range)
+        for html_name, title, page_range in articles.data:
+            page_list = self.parse_range(page_range)
             if title in self.articles:
                 raise DisambiguationError(title)
             if title in disambiguation_counter:
@@ -156,10 +156,10 @@ class Work(object):
         return self.articles
 
     # @TODO: move to staticmethod in article.py?
-    def parse_range(self, range):
+    def parse_range(self, page_range):
         """Parse the range of pages provided in Articles.lst."""
         page_list = []
-        for entry in range.split(' '):
+        for entry in page_range.split(' '):
             if not entry.strip():
                 continue
             if '-' in entry:
