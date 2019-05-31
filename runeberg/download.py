@@ -28,17 +28,17 @@ UNZIP_SUBDIR = 'tmp'
 IMG_DIR = 'Images'
 
 
-def exists_on_runeberg(title):
+def exists_on_runeberg(uid):
     """
     Check if the work exists on Runeberg.org.
 
     This does not check if the provided title is that of a work or the landing
     page for a multi-volumed work.
 
-    @param title: the runeberg.org work title to look for
+    @param uid: the runeberg.org work identifier to look for
     @return: bool
     """
-    url = '{0}/{1}/'.format(SITE, title)
+    url = '{0}/{1}/'.format(SITE, uid)
     r = requests.get(url)
     return r.status_code == 200
 
@@ -94,36 +94,36 @@ def download_lst_file(file_name, data_dir=None):
     return output_file
 
 
-def download_all(title, data_dir=None, update=None):
+def download_work(uid, data_dir=None, update=None):
     """
     Download all of the files related to a work.
 
-    @param title: the runeberg.org work title to download
+    @param uid: the runeberg.org work identifier for the work to download
     @param data_dir: the directory to which the data should be downloaded
     @param update: whether to overwrite already downloaded files. Set to None
         to trigger a prompt.
     @return: list of paths to downloaded files
     """
     data_dir = data_dir or DATA_DIR
-    work_dir = os.path.join(os.getcwd(), data_dir, title)
+    work_dir = os.path.join(os.getcwd(), data_dir, uid)
 
-    if not exists_on_runeberg(title):
-        raise NoSuchWorkError(title)
+    if not exists_on_runeberg(uid):
+        raise NoSuchWorkError(uid)
     try:
         os.makedirs(work_dir, exist_ok=True)
     except OSError as e:
         raise DirCreationError(e)
 
     urls = [
-        ('ocr', '{0}/download.pl?mode=txtzip&work={1}'.format(SITE, title)),
-        ('images', '{0}/{1}.zip'.format(SITE, title)),
+        ('ocr', '{0}/download.pl?mode=txtzip&work={1}'.format(SITE, uid)),
+        ('images', '{0}/{1}.zip'.format(SITE, uid)),
         # ('colour', '{0}/download.pl?mode=jpgzip&work={1}'.format(SITE, title))
     ]
 
     files = []
     for label, url in urls:
         output_file = os.path.join(
-            work_dir, '{0}_{1}.zip'.format(title, label))
+            work_dir, '{0}_{1}.zip'.format(uid, label))
 
         # handle already downloaded files
         if not update and (os.path.isfile(output_file)
@@ -141,9 +141,9 @@ def download_all(title, data_dir=None, update=None):
     return files
 
 
-def unzip_all(files, sub_dir=None, img_dir=''):
+def unzip_work(files, sub_dir=None, img_dir=''):
     """
-    Unzip all of the downloaded files to the given subdirectory.
+    Unzip all of the downloaded files for a work to the given subdirectory.
 
     @param files: list of zip files to the Runeberg.org work title to download
     @param sub_dir: the directory to which the files should be unzipped. Any
@@ -172,19 +172,19 @@ def unzip_all(files, sub_dir=None, img_dir=''):
 
     # the images are stored in a directory named after the work
     # rename this to ensure same structure for all unzips
-    work_title = os.path.basename(work_dir)
-    if img_dir and os.path.isdir(os.path.join(unzip_dir, work_title)):
+    work_uid = os.path.basename(work_dir)
+    if img_dir and os.path.isdir(os.path.join(unzip_dir, work_uid)):
         os.rename(
-            os.path.join(unzip_dir, work_title),
+            os.path.join(unzip_dir, work_uid),
             os.path.join(unzip_dir, img_dir))
 
 
 class NoSuchWorkError(Exception):
     """Error raised when a work does not exist."""
 
-    def __init__(self, title):
+    def __init__(self, uid):
         """Initialise the Error."""
-        msg = 'The work "{0}" was not found on runeberg.org'.format(title)
+        msg = 'The work "{0}" was not found on runeberg.org'.format(uid)
         super().__init__(msg)
 
 
