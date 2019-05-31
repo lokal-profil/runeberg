@@ -112,7 +112,7 @@ def download_work(uid, data_dir=None, update=None):
     try:
         os.makedirs(work_dir, exist_ok=True)
     except OSError as e:
-        raise DirCreationError(e)
+        raise DirCreationError(work_dir, e)
 
     urls = [
         ('ocr', '{0}/download.pl?mode=txtzip&work={1}'.format(SITE, uid)),
