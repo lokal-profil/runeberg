@@ -79,7 +79,7 @@ class Article(object):
         <a> tags or various simpler formatting.
         """
         if not hasattr(self, '_clean_title'):
-            soup = BeautifulSoup(self.title)
+            soup = BeautifulSoup(self.title, features='html5lib')
             text = soup.get_text()
             self._clean_title = text.strip()
         return self._clean_title
