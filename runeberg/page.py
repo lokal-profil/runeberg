@@ -90,7 +90,7 @@ class Page(object):
     def get_chapters(self):
         """Extract all chapter names on page."""
         if not hasattr(self, '_chapters'):
-            soup = BeautifulSoup(self.ocr)
+            soup = BeautifulSoup(self.ocr, features='html5lib')
             self._chapters = [chapter.get('name')
                               for chapter in soup.find_all('chapter')]
             if any(not chapter for chapter in self._chapters):
