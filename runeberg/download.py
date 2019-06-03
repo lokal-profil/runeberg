@@ -94,19 +94,41 @@ def download_lst_file(file_name, data_dir=None):
     return output_file
 
 
-def download_work(uid, data_dir=None, update=None):
+def get_work(uid, data_dir=None, sub_dir=None, img_dir=''):
+    """
+    Download, unzip and normalise all of the files related to a work.
+
+    @param uid: the runeberg.org work identifier for the work to download
+    @param data_dir: the name of the directory to which any data should be
+        downloaded (a work specific subdirectory will be created). Defaults
+        to cwd + DATA_DIR.
+    @param sub_dir: the name of the sub-directory of 'data_dir' to which the
+        files should be unzipped. Any files already in this directory will be
+        deleted. Defaults to UNZIP_SUBDIR.
+    @param img_dir: the name given to the image sub-directory. Defaults to
+        IMG_DIR. Set to None to keep the non-standardised name.
+    """
+    data_dir = data_dir or DATA_DIR
+    sub_dir = sub_dir or UNZIP_SUBDIR
+    img_dir = IMG_DIR if img_dir == '' else img_dir
+    work_dir = os.path.join(os.getcwd(), data_dir, uid)
+
+    files = download_work(uid, work_dir, update=None)
+    unzip_dir = unzip_work(files, sub_dir)
+    normalise_unzipped_files(unzip_dir, img_dir)
+
+
+def download_work(uid, work_dir, update=None):
     """
     Download all of the files related to a work.
 
     @param uid: the runeberg.org work identifier for the work to download
-    @param data_dir: the directory to which the data should be downloaded
+    @param work_dir: the path of the work specific sub-directory to which the
+        data should be downloaded.
     @param update: whether to overwrite already downloaded files. Set to None
         to trigger a prompt.
     @return: list of paths to downloaded files
     """
-    data_dir = data_dir or DATA_DIR
-    work_dir = os.path.join(os.getcwd(), data_dir, uid)
-
     if not exists_on_runeberg(uid):
         raise NoSuchWorkError(uid)
     try:
@@ -135,25 +157,21 @@ def download_work(uid, data_dir=None, update=None):
 
         r = requests.get(url, stream=True)
         with open(output_file, 'wb') as handle:
-            for data in tqdm(r.iter_content(), desc=label, unit_scale=True):
+            for data in tqdm(r.iter_content(), desc=label, unit_scale=True, unit='B'):
                 handle.write(data)
         files.append(output_file)
     return files
 
 
-def unzip_work(files, sub_dir=None, img_dir=''):
+def unzip_work(files, sub_dir):
     """
-    Unzip all of the downloaded files for a work to the given subdirectory.
+    Unzip all of the downloaded files for a work to the given sub-directory.
 
-    @param files: list of zip files to the Runeberg.org work title to download
-    @param sub_dir: the directory to which the files should be unzipped. Any
-        files already in this directory will be deleted. Defaults to
-        UNZIP_SUBDIR.
-    @param img_dir: the name given to the image directory. Defaults to
-        IMG_DIR. Set to None to keep the non-standardised name.
+    @param files: list of zip files to unpack
+    @param sub_dir: the name of the sub-directory to which the files should be
+        unzipped. Any files already in this directory will be deleted.
+    @return: path to the directory in which the files were unzipped
     """
-    sub_dir = sub_dir or UNZIP_SUBDIR
-    img_dir = IMG_DIR if img_dir == '' else img_dir
     work_dir = os.path.dirname(files[0])
     unzip_dir = os.path.join(work_dir, sub_dir)
     try:
@@ -164,19 +182,53 @@ def unzip_work(files, sub_dir=None, img_dir=''):
         os.mkdir(unzip_dir)
 
     for f in files:
-        # non-exisitant files end up as 0 byte zips
+        # non-existent files end up as 0 byte zips
         if is_empty_file(f):
             continue
         with zipfile.ZipFile(f, 'r') as zip_ref:
             zip_ref.extractall(unzip_dir)
 
-    # the images are stored in a directory named after the work
-    # rename this to ensure same structure for all unzips
-    work_uid = os.path.basename(work_dir)
+    return unzip_dir
+
+
+def normalise_unzipped_files(unzip_dir, img_dir):
+    """
+    Normalise the directory structure and file encoding of the unzipped files.
+
+    The images are stored in a directory named after the work uid, this is
+    renamed to ensure the same structure for all unzips.
+
+    The metadata file is 'ISO-8859-1' encoded, this is changed to utf-8.
+
+    @param unzip_dir: the path to the directory to which the files were
+        unzipped.
+    @param img_dir: the name given to the image directory. If None the
+        non-standardised name is kept.
+    """
+    work_uid = os.path.basename(os.path.split(unzip_dir)[0])
+
+    # normalise image directory
     if img_dir and os.path.isdir(os.path.join(unzip_dir, work_uid)):
         os.rename(
             os.path.join(unzip_dir, work_uid),
             os.path.join(unzip_dir, img_dir))
+
+    # normalise metadata file encoding
+    metadata_file = os.path.join(unzip_dir, 'Metadata')
+    if os.path.isfile(metadata_file):
+        re_encode_file(metadata_file, 'ISO-8859-1', 'utf-8')
+
+
+def re_encode_file(input_file, from_codec, to_codec):
+    """Change the encoding of a file."""
+    output_file = '{}_tmp'.format(input_file)
+
+    with open(input_file, encoding=from_codec) as f, \
+            open(output_file, 'w', encoding=to_codec) as e:
+        text = f.read()
+        e.write(text)
+    os.remove(input_file)
+    os.rename(output_file, input_file)
 
 
 class NoSuchWorkError(Exception):

@@ -178,7 +178,7 @@ class Work(object):
         @return: list of lines (incl. comments)
         """
         file_path = os.path.join(base_path, 'Metadata')
-        with open(file_path, encoding='ISO-8859-1') as f:
+        with open(file_path) as f:
             return f.read().split('\n')  # unlike readlines() this trims the \n
 
     # @TODO: consider triggering parse_marc here
