@@ -165,9 +165,13 @@ def download_work(uid, work_dir, update=None):
                 continue
 
         r = requests.get(url, stream=True)
+        chunk_size = 1024
         with open(output_file, 'wb') as handle:
-            for data in tqdm(r.iter_content(), desc=label, unit_scale=True, unit='B'):
-                handle.write(data)
+            pbar = tqdm(desc=label, unit_scale=True, unit='B')
+            for data in r.iter_content(chunk_size=chunk_size):
+                if data:  # filter out keep-alive new chunks
+                    pbar.update(len(data))
+                    handle.write(data)
         files.append(output_file)
     return files
 
