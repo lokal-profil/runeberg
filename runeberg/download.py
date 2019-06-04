@@ -3,9 +3,11 @@
 """
 Download a single book from Runeberg.org.
 
-@TODO: handle/detect volumed works:
+@TODO: handle volumed works:
     ocr zip contains no Pages folder;
-    images zip doesn't exist but r.status_code is still 200.
+    images zip may not exist but r.status_code is still 200;
+    article.lst may contain a list of volumes (see e.g. kok) but unclear if
+    that is standard (see e.g. nf).
 @TODO: handle colour images (both download and later insert/replace):
     quick first pass would be to download and check if `not is_empty_file()`
     if so then mention the existence of these to the user
@@ -116,6 +118,13 @@ def get_work(uid, data_dir=None, sub_dir=None, img_dir=''):
     files = download_work(uid, work_dir, update=None)
     unzip_dir = unzip_work(files, sub_dir)
     normalise_unzipped_files(unzip_dir, img_dir)
+
+    # test for volumed work
+    if not os.path.isdir(os.path.join(unzip_dir, 'Pages')):
+        raise NotImplementedError(
+            'Looks like a volumed work was encountered. These are not yet '
+            'supported, you can most often find the individual volumes listed '
+            'in the Articles.lst file.')
 
 
 def download_work(uid, work_dir, update=None):
