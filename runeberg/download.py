@@ -79,14 +79,14 @@ def download_lst_file(file_name, data_dir=None):
     """
     Download a runeberg.org .lst file and convert it to utf-8.
 
-    @param data_dir: the directory to which the data should be downloaded.
-        Defaults to DATA_DIR.
     @param file_name: name of the file to download and to which it is saved.
+    @param data_dir: the path of the directory to which the data should be
+        downloaded. Defaults to {cwd}/DATA_DIR.
     @return: path to downloaded file
     """
-    data_dir = data_dir or DATA_DIR
+    data_dir = data_dir or os.path.join(os.getcwd(), DATA_DIR)
     url = '{0}/authors/{1}'.format(SITE, file_name)
-    output_file = os.path.join(os.getcwd(), data_dir, file_name)
+    output_file = os.path.join(data_dir, file_name)
     r = requests.get(url)
     r.encoding = 'latin1'
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -99,20 +99,20 @@ def get_work(uid, data_dir=None, sub_dir=None, img_dir=''):
     Download, unzip and normalise all of the files related to a work.
 
     @param uid: the runeberg.org work identifier for the work to download
-    @param data_dir: the name of the directory to which any data should be
+    @param data_dir: the path of the directory to which any data should be
         downloaded (a work specific subdirectory will be created). Defaults
-        to cwd + DATA_DIR.
+        to {cwd}/DATA_DIR.
     @param sub_dir: the name of the sub-directory of 'data_dir' to which the
         files should be unzipped. Any files already in this directory will be
         deleted. Defaults to UNZIP_SUBDIR.
     @param img_dir: the name given to the image sub-directory. Defaults to
         IMG_DIR. Set to None to keep the non-standardised name.
     """
-    data_dir = data_dir or DATA_DIR
+    data_dir = data_dir or os.path.join(os.getcwd(), DATA_DIR)
     sub_dir = sub_dir or UNZIP_SUBDIR
     img_dir = IMG_DIR if img_dir == '' else img_dir
-    work_dir = os.path.join(os.getcwd(), data_dir, uid)
 
+    work_dir = os.path.join(data_dir, uid)
     files = download_work(uid, work_dir, update=None)
     unzip_dir = unzip_work(files, sub_dir)
     normalise_unzipped_files(unzip_dir, img_dir)

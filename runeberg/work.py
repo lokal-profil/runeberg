@@ -45,10 +45,17 @@ class Work(object):
         # @TODO: something recording the date when runeberg was downloaded
 
     @staticmethod
-    def from_files(uid, known_people=None):
-        """Create an Work from the downloaded, unzipped files."""
+    def from_files(uid, base_path=None, known_people=None):
+        """
+        Create an Work from the downloaded, unzipped files.
+
+        @param base_path: path to the directory containing the unzipped files.
+            Overrides the default {cwd}/DATA_DIR/{uid}/UNZIP_SUBDIR
+        @param known_people: dict of Person objects from which author, editor
+            and translator roles are matched.
+        """
         work = Work(uid)
-        base_path = os.path.join(
+        base_path = base_path or os.path.join(
             os.getcwd(), DATA_DIR, uid, UNZIP_SUBDIR)
         chapters = work.load_pages(base_path)
         work.load_articles(base_path, chapters)
