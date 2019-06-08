@@ -119,7 +119,7 @@ class Work(object):
         chapters = Counter()
         for uid, label in pages.data:
             page = Page.from_path(
-                base_path, self.image_type, uid, label, uid in ok_pages)
+                base_path, uid, self.image_type, label, uid in ok_pages)
             chapters.update(page.get_chapters())
             self.pages[uid] = page
         return chapters
@@ -315,10 +315,15 @@ class Work(object):
         stderr = DEVNULL if silent else None
         for i, page in tqdm(enumerate(self.pages.values(), 1),
                             total=len(self.pages)):
-            # cjb2 to convert single tif to djvu
             # @TODO: can try "capture_output=True" if python is bumped to 3.7
-            run(['cjb2', '-clean', page.image, tmp_djvu],
-                check=True, stderr=stderr)
+            if page.image_file_type == '.tif':
+                # cjb2 to convert single tif to djvu
+                run(['cjb2', '-clean', page.image, tmp_djvu],
+                    check=True, stderr=stderr)
+            else:
+                raise NotImplementedError(
+                    'At the moment only .tif images can be converted to DjVu')
+
             if i == 1:
                 base_path = os.path.dirname(page.image)
                 book_djvu = os.path.join(base_path, 'book.djvu')
