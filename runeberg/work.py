@@ -315,14 +315,20 @@ class Work(object):
         stderr = DEVNULL if silent else None
         for i, page in tqdm(enumerate(self.pages.values(), 1),
                             total=len(self.pages)):
+
             # @TODO: can try "capture_output=True" if python is bumped to 3.7
+            # use page file type in case original image has been replaced
             if page.image_file_type == '.tif':
                 # cjb2 to convert single tif to djvu
                 run(['cjb2', '-clean', page.image, tmp_djvu],
                     check=True, stderr=stderr)
+            elif page.image_file_type == '.jpg':
+                run(['c44', '-crcbfull', page.image, tmp_djvu],
+                    check=True, stderr=stderr)
             else:
                 raise NotImplementedError(
-                    'At the moment only .tif images can be converted to DjVu')
+                    'At the moment only .tif and .jpg images can be converted '
+                    'to DjVu')
 
             if i == 1:
                 base_path = os.path.dirname(page.image)
