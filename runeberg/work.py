@@ -17,11 +17,13 @@ from subprocess import DEVNULL, run  # used for djvu conversion
 from tqdm import tqdm
 
 from runeberg.article import Article
-from runeberg.download import DATA_DIR, SITE, UNZIP_SUBDIR
+from runeberg.download import DATA_DIR, IMG_DIR, SITE, UNZIP_SUBDIR
 from runeberg.lst_file import LstFile
 from runeberg.page import Page
 from runeberg.page_range import PageRange
 from runeberg.person import Person
+
+IMAGE_TYPES = ('.tif', '.jpg')
 
 
 class Work(object):
@@ -41,11 +43,12 @@ class Work(object):
         self.identifiers = {}  # identifiers for the work in external sources
         self.people = {}  # people involved with the work
         self.djvu = None  # djvu file of the whole work
+        self.image_type = None  # the default file extension of the image files
 
         # @TODO: something recording the date when runeberg was downloaded
 
     @staticmethod
-    def from_files(uid, base_path=None, known_people=None):
+    def from_files(uid, base_path=None, known_people=None, img_dir=None):
         """
         Create an Work from the downloaded, unzipped files.
 
@@ -53,10 +56,14 @@ class Work(object):
             Overrides the default {cwd}/DATA_DIR/{uid}/UNZIP_SUBDIR
         @param known_people: dict of Person objects from which author, editor
             and translator roles are matched.
+        @param img_dir: the name given to the image sub-directory. Defaults to
+            IMG_DIR.
         """
         work = Work(uid)
         base_path = base_path or os.path.join(
             os.getcwd(), DATA_DIR, uid, UNZIP_SUBDIR)
+        img_dir = img_dir or IMG_DIR
+        work.determine_image_file_type(base_path, img_dir)
         chapters = work.load_pages(base_path)
         work.load_articles(base_path, chapters)
         work.load_metadata(base_path)
@@ -67,6 +74,32 @@ class Work(object):
     def runeberg_url(self):
         """Return the base url on runeberg.org."""
         return '{0}/{1}/'.format(SITE, self.uid)
+
+    def determine_image_file_type(self, base_path, img_dir):
+        """
+        Determine the file type of the images of the scanned pages.
+
+        Will stop after encountering the first recognised image file type.
+
+        @raises NoImagesError: if no files are encountered
+        @raises UnrecognisedImageTypeError: if no recognised image file types
+            are encountered.
+        @param base_path: The path to the unzipped directory.
+        @param img_dir: the image subdirectory
+        """
+        found_types = set()
+        img_dir_path = os.path.join(base_path, img_dir)
+        with os.scandir(img_dir_path) as it:
+            for entry in it:
+                if not entry.name.startswith('.') and entry.is_file():
+                    ext = os.path.splitext(entry)[1]
+                    if ext in IMAGE_TYPES:
+                        self.image_type = ext
+                        return
+                    found_types.add(ext)
+        if not found_types:
+            raise NoImagesError(img_dir_path)
+        raise UnrecognisedImageTypeError(found_types)
 
     def load_pages(self, base_path):
         """
@@ -86,7 +119,7 @@ class Work(object):
         chapters = Counter()
         for uid, label in pages.data:
             page = Page.from_path(
-                base_path, uid, label, uid in ok_pages)
+                base_path, self.image_type, uid, label, uid in ok_pages)
             chapters.update(page.get_chapters())
             self.pages[uid] = page
         return chapters
@@ -313,6 +346,32 @@ class Work(object):
         executable.
         """
         return (which('djvm') is not None and which('cjb2') is not None)
+
+
+class NoImagesError(Exception):
+    """Error when no images were found for the pages of the work."""
+
+    def __init__(self, img_dir_path):
+        """Initialise a NoImagesError."""
+        msg = (
+            'Could not detect any images for this work. Are you sure you '
+            'provided the correct image subdirectory ({}) and that this is '
+            'not a volumed work?'.format(img_dir_path))
+        super().__init__(msg)
+
+
+class UnrecognisedImageTypeError(Exception):
+    """Error in trying to determine the image file type."""
+
+    def __init__(self, encountered):
+        """Initialise a UnrecognisedImageTypeError."""
+        msg = (
+            'The encountered images do not seem to be of a recognised image '
+            'file type.\n'
+            'Recognised image file types are: {0}\n'
+            'Encountered file types: {1}'.format(
+                ', '.join(IMAGE_TYPES), ', '.join(encountered)))
+        super().__init__(msg)
 
 
 class DisambiguationError(Exception):
