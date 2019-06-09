@@ -11,6 +11,7 @@ This most often corresponds to an edition in e.g. Wikidata terminology.
 import os
 from collections import Counter, OrderedDict
 from itertools import takewhile
+from shlex import quote
 from shutil import which  # used for djvu conversion
 from subprocess import DEVNULL, run  # used for djvu conversion
 
@@ -315,15 +316,16 @@ class Work(object):
         stderr = DEVNULL if silent else None
         for i, page in tqdm(enumerate(self.pages.values(), 1),
                             total=len(self.pages)):
+            in_file = quote(page.image)
 
             # @TODO: can try "capture_output=True" if python is bumped to 3.7
             # use page file type in case original image has been replaced
             if page.image_file_type == '.tif':
                 # cjb2 to convert single tif to djvu
-                run(['cjb2', '-clean', page.image, tmp_djvu],
+                run(['cjb2', '-clean', in_file, tmp_djvu],
                     check=True, stderr=stderr)
             elif page.image_file_type == '.jpg':
-                run(['c44', '-crcbfull', page.image, tmp_djvu],
+                run(['c44', '-crcbfull', in_file, tmp_djvu],
                     check=True, stderr=stderr)
             else:
                 raise NotImplementedError(
