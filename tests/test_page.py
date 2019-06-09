@@ -146,22 +146,23 @@ class TestCheckBlank(unittest.TestCase):
         )
         self.page = Page('0001', ocr=text)
 
+    @unittest.expectedFailure  # hack to assert not Warns
     def test_check_blank_empty_and_blank(self):
-        # How to assert not Warned
         self.page.ocr = ''
         self.page.is_proofread = None
-        self.page.check_blank()
+        with self.assertWarnsRegex(UserWarning, r'is blank'):
+            self.page.check_blank()
 
     def test_check_blank_empty_and_proofread(self):
         self.page.ocr = ''
         self.page.is_proofread = True
-        with self.assertWarnsRegex(UserWarning, r'is likely blank'):
+        with self.assertWarnsRegex(UserWarning, r'is blank'):
             self.page.check_blank()
 
     def test_check_blank_empty_and_not_proofread(self):
         self.page.ocr = ''
         self.page.is_proofread = False
-        with self.assertWarnsRegex(UserWarning, r'is likely blank'):
+        with self.assertWarnsRegex(UserWarning, r'might be blank'):
             self.page.check_blank()
 
     def test_check_blank_not_empty_and_blank(self):
@@ -169,12 +170,16 @@ class TestCheckBlank(unittest.TestCase):
         with self.assertWarnsRegex(UserWarning, r'is not empty'):
             self.page.check_blank()
 
+    @unittest.expectedFailure
     def test_check_blank_not_empty_and_proofread(self):
         # How to assert not Warned
         self.page.is_proofread = True
-        self.page.check_blank()
+        with self.assertWarnsRegex(UserWarning, r'is not empty'):
+            self.page.check_blank()
 
+    @unittest.expectedFailure
     def test_check_blank_not_empty_and_not_proofread(self):
         # How to assert not Warned
         self.page.is_proofread = False
-        self.page.check_blank()
+        with self.assertWarnsRegex(UserWarning, r'is not empty'):
+            self.page.check_blank()

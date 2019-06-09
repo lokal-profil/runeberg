@@ -61,10 +61,15 @@ class Page(object):
                     self.uid, self.label),
                 UserWarning)
         elif self.is_proofread and self.ocr.strip() == '':
-            # less of an issue
             warnings.warn(
                 '{0} ({1}) was labelled as proofread but is blank. Either '
                 're-add the ocr text or set `is_proofread=None`'.format(
+                    self.uid, self.label),
+                UserWarning)
+        elif self.is_proofread == False and self.ocr.strip() == '':
+            warnings.warn(
+                '{0} ({1}) might be blank. Check the image and if truly blank '
+                'set `is_proofread=None`'.format(
                     self.uid, self.label),
                 UserWarning)
 
