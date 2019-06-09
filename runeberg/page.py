@@ -55,16 +55,16 @@ class Page(object):
     def check_blank(self):
         """Sanity check blank pages and blank page candidates."""
         if self.is_proofread is None and self.ocr.strip() != '':
-            # should include a comment about either clearing out the ocr or
-            # changing it to non-blank
             warnings.warn(
-                '{} was labeled "blank" but ocr is not empty.'.format(
-                    self.uid),
+                '{0} ({1}) was labelled "blank" but ocr is not empty. Either '
+                'clear out the ocr text or set `is_proofread=False`'.format(
+                    self.uid, self.label),
                 UserWarning)
-        elif self.is_proofread is not None and self.ocr.strip() == '':
+        elif self.is_proofread and self.ocr.strip() == '':
             # less of an issue
             warnings.warn(
-                '{} was labeled "{}" but is likely blank.'.format(
+                '{0} ({1}) was labelled as proofread but is blank. Either '
+                're-add the ocr text or set `is_proofread=None`'.format(
                     self.uid, self.label),
                 UserWarning)
 
