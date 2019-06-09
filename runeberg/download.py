@@ -8,10 +8,6 @@ Download a single book from Runeberg.org.
     images zip may not exist but r.status_code is still 200;
     article.lst may contain a list of volumes (see e.g. kok) but unclear if
     that is standard (see e.g. nf).
-@TODO: handle colour images (both download and later insert/replace):
-    quick first pass would be to download and check if `not is_empty_file()`
-    if so then mention the existence of these to the user
-    (later djvu would likely not work).
 @TODO: Create update prompt for whether to overwrite downloaded files or not
 @TODO: Consider dropping tqdm:
     Less useful as runeberg doesn't provide file size in header, but still
@@ -19,6 +15,7 @@ Download a single book from Runeberg.org.
 """
 import os
 import shutil
+import warnings
 import zipfile
 
 import requests
@@ -126,6 +123,15 @@ def get_work(uid, data_dir=None, sub_dir=None, img_dir=''):
             'supported, you can most often find the individual volumes listed '
             'in the Articles.lst file.')
 
+    # test for colour images
+    if not is_empty_file(os.path.join(work_dir, '{}_colour.zip'.format(uid))):
+        warnings.warn(
+            'There seem to be colour images available for this work. To use '
+            'these in the parser they must be manually included after '
+            'initialisation. Note that DjVu conversion may not work with '
+            'coloured images.',
+            UserWarning)
+
 
 def download_work(uid, work_dir, update=None):
     """
@@ -148,7 +154,7 @@ def download_work(uid, work_dir, update=None):
     urls = [
         ('ocr', '{0}/download.pl?mode=txtzip&work={1}'.format(SITE, uid)),
         ('images', '{0}/{1}.zip'.format(SITE, uid)),
-        # ('colour', '{0}/download.pl?mode=jpgzip&work={1}'.format(SITE, title))
+        ('colour', '{0}/download.pl?mode=jpgzip&work={1}'.format(SITE, uid))
     ]
 
     files = []
@@ -196,7 +202,8 @@ def unzip_work(files, sub_dir):
 
     for f in files:
         # non-existent files end up as 0 byte zips
-        if is_empty_file(f):
+        # colour images risk overwriting bw images
+        if is_empty_file(f) or f.endswith('_colour.zip'):
             continue
         with zipfile.ZipFile(f, 'r') as zip_ref:
             zip_ref.extractall(unzip_dir)
