@@ -132,3 +132,49 @@ class TestRenameChapter(unittest.TestCase):
         )
         self.page.rename_chapter('chp1', 'foo')
         self.assertEqual(self.page.ocr, expected)
+
+
+class TestCheckBlank(unittest.TestCase):
+
+    """Test the check_blank() method."""
+
+    def setUp(self):
+        text = (
+            'row 1\n'
+            'row 2\n'
+            'row3'
+        )
+        self.page = Page('0001', ocr=text)
+
+    def test_check_blank_empty_and_blank(self):
+        # How to assert not Warned
+        self.page.ocr = ''
+        self.page.is_proofread = None
+        self.page.check_blank()
+
+    def test_check_blank_empty_and_proofread(self):
+        self.page.ocr = ''
+        self.page.is_proofread = True
+        with self.assertWarnsRegex(UserWarning, r'is likely blank'):
+            self.page.check_blank()
+
+    def test_check_blank_empty_and_not_proofread(self):
+        self.page.ocr = ''
+        self.page.is_proofread = False
+        with self.assertWarnsRegex(UserWarning, r'is likely blank'):
+            self.page.check_blank()
+
+    def test_check_blank_not_empty_and_blank(self):
+        self.page.is_proofread = None
+        with self.assertWarnsRegex(UserWarning, r'is not empty'):
+            self.page.check_blank()
+
+    def test_check_blank_not_empty_and_proofread(self):
+        # How to assert not Warned
+        self.page.is_proofread = True
+        self.page.check_blank()
+
+    def test_check_blank_not_empty_and_not_proofread(self):
+        # How to assert not Warned
+        self.page.is_proofread = False
+        self.page.check_blank()
