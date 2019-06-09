@@ -65,7 +65,7 @@ class TestGetChapters(unittest.TestCase):
             'row 2\n'
             'Pre<chapter name="chp2">Post\n'
         )
-        with self.assertRaises(UserWarning):
+        with self.assertRaises(ValueError):
             self.page.get_chapters()
 
 

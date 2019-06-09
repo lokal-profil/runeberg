@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """A runeberg.org page is a single digitized page of a work."""
 import os
+import warnings
 
 from bs4 import BeautifulSoup
 
@@ -54,12 +55,18 @@ class Page(object):
     def check_blank(self):
         """Sanity check blank pages and blank page candidates."""
         if self.is_proofread is None and self.ocr.strip() != '':
-            raise UserWarning(
-                '{} was labeled "blank" but ocr is not empty'.format(self.uid))
+            # should include a comment about either clearing out the ocr or
+            # changing it to non-blank
+            warnings.warn(
+                '{} was labeled "blank" but ocr is not empty.'.format(
+                    self.uid),
+                UserWarning)
         elif self.is_proofread is not None and self.ocr.strip() == '':
-            raise UserWarning(
-                '{} was labeled "{}" but is likely blank'.format(
-                    self.uid, self.label))
+            # less of an issue
+            warnings.warn(
+                '{} was labeled "{}" but is likely blank.'.format(
+                    self.uid, self.label),
+                UserWarning)
 
     @staticmethod
     def from_path(base_path, uid, label, whole_page_ok):
@@ -76,7 +83,7 @@ class Page(object):
         """
         img_path = os.path.join(base_path, IMG_DIR, '{}.tif'.format(uid))
         if not os.path.isfile(img_path):
-            raise UserWarning(
+            raise ValueError(
                 '{} was provided as the image for "{}" but no such image '
                 'exists'.format(img_path, uid))
         text_path = os.path.join(base_path, 'Pages', '{}.txt'.format(uid))
@@ -94,7 +101,7 @@ class Page(object):
             self._chapters = [chapter.get('name')
                               for chapter in soup.find_all('chapter')]
             if any(not chapter for chapter in self._chapters):
-                raise UserWarning(
+                raise ValueError(
                     'Encountered a blank/missing chapter name on page '
                     '{0} ({1})'.format(self.uid, self.label))
         return self._chapters
