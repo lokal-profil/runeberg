@@ -93,7 +93,7 @@ def download_lst_file(file_name, data_dir=None):
     return output_file
 
 
-def get_work(uid, data_dir=None, sub_dir=None, img_dir=''):
+def get_work(uid, data_dir=None, sub_dir=None, img_dir='', update=None):
     """
     Download, unzip and normalise all of the files related to a work.
 
@@ -105,14 +105,16 @@ def get_work(uid, data_dir=None, sub_dir=None, img_dir=''):
         files should be unzipped. Any files already in this directory will be
         deleted. Defaults to UNZIP_SUBDIR.
     @param img_dir: the name given to the image sub-directory. Defaults to
-        IMG_DIR. Set to None to keep the non-standardised name.
+        IMG_DIR. Set to None to keep the non-standardised name
+    @param update: whether to overwrite already downloaded files. Set to None
+        to trigger a prompt.
     """
     data_dir = data_dir or os.path.join(os.getcwd(), DATA_DIR)
     sub_dir = sub_dir or UNZIP_SUBDIR
     img_dir = IMG_DIR if img_dir == '' else img_dir
 
     work_dir = os.path.join(data_dir, uid)
-    files = download_work(uid, work_dir, update=None)
+    files = download_work(uid, work_dir, update=update)
     unzip_dir = unzip_work(files, sub_dir)
     normalise_unzipped_files(unzip_dir, img_dir)
 
@@ -168,6 +170,7 @@ def download_work(uid, work_dir, update=None):
             if update is None:
                 raise NotImplementedError('Update prompt not implemented')
             else:
+                files.append(output_file)
                 continue
 
         r = requests.get(url, stream=True)
