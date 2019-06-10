@@ -378,6 +378,7 @@ class UnrecognisedImageTypeError(Exception):
 
     def __init__(self, encountered):
         """Initialise a UnrecognisedImageTypeError."""
+        encountered = sorted(list(encountered))  # make deterministic
         msg = (
             'The encountered images do not seem to be of a recognised image '
             'file type.\n'

@@ -7,7 +7,29 @@ from collections import Counter, OrderedDict
 from runeberg.article import Article
 from runeberg.page import Page
 from runeberg.page_range import PageRange
-from runeberg.work import DisambiguationError, ReconciliationError, Work
+from runeberg.work import (
+    DisambiguationError,
+    NoImagesError,
+    ReconciliationError,
+    UnrecognisedImageTypeError,
+    Work
+)
+
+
+class PseudoDirEntry(object):
+
+    """Class to mock DirEntry returned by os.scandir."""
+
+    def __init__(self, name, is_file=True):
+        self.name = name
+        self.path = './somewhere/{}'.format(name)
+        self._is_file = is_file
+
+    def is_file(self):
+        return self._is_file
+
+    def __fspath__(self):
+        return self.path
 
 
 class TestParseRange(unittest.TestCase):
@@ -343,3 +365,56 @@ class TestReconciliationError(unittest.TestCase):
         self.assertEqual(e.no_tag_articles, [
             'b: page(s) 002'
         ])
+
+
+class TestDetermineImageFileType(unittest.TestCase):
+
+    """Unit tests for determine_image_file_type()."""
+
+    def setUp(self):
+        self.work = Work('test')
+        # cannot autospec due to https://bugs.python.org/issue23078
+
+        self.mock_scandir_list = [
+            PseudoDirEntry('.git', False),
+            PseudoDirEntry('.travis.yml'),
+            PseudoDirEntry('tests', False)
+        ]
+
+        self.mock_scandir_val = mock.MagicMock()
+        self.mock_scandir_val.__enter__.return_value = self.mock_scandir_list
+        patcher = mock.patch('runeberg.work.os.scandir',
+                             return_value=self.mock_scandir_val)
+        self.mock_scandir = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_determine_image_file_type_empty(self):
+        del self.mock_scandir_list[:]  # empty the list without creating new
+        with self.assertRaises(NoImagesError):
+            self.work.determine_image_file_type('base', 'img')
+            self.mock_scandir.assert_called_once_with('base/img')
+
+    def test_determine_image_file_type_no_valid_files(self):
+        with self.assertRaises(NoImagesError):
+            self.work.determine_image_file_type('base', 'img')
+
+    def test_determine_image_file_type_valid_file(self):
+        self.mock_scandir_list.append(PseudoDirEntry('tests.jpg'))
+
+        self.work.determine_image_file_type('base', 'img')
+        self.assertEquals(self.work.image_type, '.jpg')
+
+    def test_determine_image_file_type_no_valid_types(self):
+        self.mock_scandir_list.append(PseudoDirEntry('tests.foo'))
+        self.mock_scandir_list.append(PseudoDirEntry('tests.bar'))
+
+        with self.assertRaisesRegex(UnrecognisedImageTypeError,
+                                    '\.bar, \.foo'):
+            self.work.determine_image_file_type('base', 'img')
+
+    def test_determine_image_file_type_valid_file_ignore_second(self):
+        self.mock_scandir_list.append(PseudoDirEntry('tests.jpg'))
+        self.mock_scandir_list.append(PseudoDirEntry('tests.tif'))
+
+        self.work.determine_image_file_type('base', 'img')
+        self.assertEquals(self.work.image_type, '.jpg')
