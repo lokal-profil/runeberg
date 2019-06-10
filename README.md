@@ -12,6 +12,7 @@ First determine the identifier of the work you wish to download. For e.g.
 import runeberg.download as downloader
 
 downloader.get_work('<uid>')
+# Warning raised if additional colour images are found, these are not unpacked.
 
 # Parse the downloaded work:
 # from the parsed work you can access individual pages, articles/chapters along
@@ -22,6 +23,16 @@ parsed_work = runeberg.Work.from_files('<uid>')
 # Create a DjVu file of the work
 print(parsed_work.to_djvu())  # outputs the path to the created file
 ```
+
+## Caveats
+
+Some of the `Metadata` files are encoded in `Windows 1252` rather than the
+default `latin-1`. The framework does not currently detect this. If you
+encounter such a file some characters may be misinterpreted and you must
+manually re-encode the file before parsing the work.
+
+If the originally scanned images were `.jpg` then the downloaded "colour
+images" will just be a second identical copy of these.
 
 ## Requirements
 
