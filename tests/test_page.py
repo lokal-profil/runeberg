@@ -185,6 +185,35 @@ class TestCheckBlank(unittest.TestCase):
             self.page.check_blank()
 
 
+class TestSetBlank(unittest.TestCase):
+
+    """Test the set_blank() method."""
+
+    def setUp(self):
+        self.page = Page('0001')
+        self.page.is_proofread = False
+
+    def test_set_blank_empty_label(self):
+        # self.page.label = ''
+        self.page.set_blank()
+        self.assertEquals(self.page.label, '')
+        self.assertFalse(self.page.is_proofread)
+
+    def test_set_blank_non_blank_label(self):
+        self.page.label = 'foo'
+
+        self.page.set_blank()
+        self.assertEquals(self.page.label, 'foo')
+        self.assertFalse(self.page.is_proofread)
+
+    def test_set_blank_blank_label(self):
+        self.page.label = '(blank)'
+
+        self.page.set_blank()
+        self.assertEquals(self.page.label, Page.DEFAULT_BLANK)
+        self.assertIsNone(self.page.is_proofread)
+
+
 class TestImageFileType(unittest.TestCase):
 
     """Test the image_file_type() method."""
