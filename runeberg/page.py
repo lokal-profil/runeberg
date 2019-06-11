@@ -39,6 +39,13 @@ class Page(object):
         """Represent the Page as a string."""
         return self.uid
 
+    @property
+    def image_file_type(self):
+        """Return the file extension of the image file."""
+        if not self.image:
+            return None
+        return os.path.splitext(self.image)[1]
+
     def set_blank(self, default_label=None):
         """
         Set the blank proofread status based on page label.
@@ -74,7 +81,7 @@ class Page(object):
                 UserWarning)
 
     @staticmethod
-    def from_path(base_path, uid, label, whole_page_ok):
+    def from_path(base_path, uid, image_type, label, whole_page_ok):
         """
         Create a page from the path to the unzipped files and a uid.
 
@@ -82,11 +89,13 @@ class Page(object):
             unzipped files.
         @param uid: the identifier of the page, ordinarily the zero-padded
             ordinal number of the page.
+        @param image_type: the expected file extension of the scanned image.
         @param label: the real printable label of the page, ordinarily the page
             number.
         @param whole_page_ok: whether the whole page has been proofread
         """
-        img_path = os.path.join(base_path, IMG_DIR, '{}.tif'.format(uid))
+        img_path = os.path.join(
+            base_path, IMG_DIR, '{0}{1}'.format(uid, image_type))
         if not os.path.isfile(img_path):
             raise ValueError(
                 '{} was provided as the image for "{}" but no such image '

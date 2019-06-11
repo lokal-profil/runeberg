@@ -183,3 +183,19 @@ class TestCheckBlank(unittest.TestCase):
         self.page.is_proofread = False
         with self.assertWarnsRegex(UserWarning, r'is not empty'):
             self.page.check_blank()
+
+
+class TestImageFileType(unittest.TestCase):
+
+    """Test the image_file_type() method."""
+
+    def setUp(self):
+        self.page = Page('0001')
+
+    def test_image_file_type_empty(self):
+        # self.page.image = ''
+        self.assertIsNone(self.page.image_file_type)
+
+    def test_image_file_type_tif(self):
+        self.page.image = 'somewhere/foo.tif'
+        self.assertEquals(self.page.image_file_type, '.tif')
