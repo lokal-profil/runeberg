@@ -52,42 +52,49 @@ def is_empty_file(file_path):
     return os.stat(file_path).st_size == 0
 
 
-def download_author_file(data_dir=None):
+def download_author_file(data_dir=None, save=True):
     """
     Download the runeberg.org author file to a.lst and convert it to utf-8.
 
     @param data_dir: the directory to which the data should be downloaded.
         Defaults to DATA_DIR.
-    @return: path to downloaded file
+    @param save: whether the file should be saved or the stream returned
+    @return: path to downloaded file if save, else the downloaded data
     """
-    return download_lst_file('a.lst', data_dir)
+    return download_lst_file('a.lst', data_dir, save)
 
 
-def download_works_file(data_dir=None):
+def download_works_file(data_dir=None, save=True):
     """
     Download the runeberg.org works file to t.lst and convert it to utf-8.
 
     @param data_dir: the directory to which the data should be downloaded.
         Defaults to DATA_DIR.
-    @return: path to downloaded file
+    @param save: whether the file should be saved or the stream returned
+    @return: path to downloaded file if save, else the downloaded data
     """
-    return download_lst_file('t.lst', data_dir)
+    return download_lst_file('t.lst', data_dir, save)
 
 
-def download_lst_file(file_name, data_dir=None):
+def download_lst_file(file_name, data_dir=None, save=True):
     """
-    Download a runeberg.org .lst file and convert it to utf-8.
+    Download a runeberg.org .lst file and convert it from latin1 to utf-8.
 
     @param file_name: name of the file to download and to which it is saved.
     @param data_dir: the path of the directory to which the data should be
-        downloaded. Defaults to {cwd}/DATA_DIR.
-    @return: path to downloaded file
+        saved once downloaded. Defaults to {cwd}/DATA_DIR.
+    @param save: whether the file should be saved or the stream returned
+    @return: path to downloaded file if save, else the downloaded data
     """
-    data_dir = data_dir or os.path.join(os.getcwd(), DATA_DIR)
     url = '{0}/authors/{1}'.format(SITE, file_name)
-    output_file = os.path.join(data_dir, file_name)
     r = requests.get(url)
     r.encoding = 'latin1'
+
+    if not save:
+        return r.text
+
+    data_dir = data_dir or os.path.join(os.getcwd(), DATA_DIR)
+    output_file = os.path.join(data_dir, file_name)
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(r.text)
     return output_file

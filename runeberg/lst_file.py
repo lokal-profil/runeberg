@@ -31,7 +31,7 @@ class LstFile(object):
         """
         Create an LstFile from an .lst file object.
 
-        @param func: a function to which each parsed line is passed. If non is
+        @param func: a function to which each parsed line is passed. If none is
             provided each line is returned as a tuple.
         """
         lst = LstFile(func)
@@ -39,6 +39,21 @@ class LstFile(object):
             lst.name = os.path.basename(f.name)
             for line in f:
                 lst.parse_line(line)
+        return lst
+
+    @staticmethod
+    def from_stream(stream, file_name=None, func=None):
+        """
+        Create an LstFile from an .lst file stream.
+
+        @param func: a function to which each parsed line is passed. If none is
+            provided each line is returned as a tuple.
+        """
+        lst = LstFile(func)
+        if file_name:
+            lst.name = file_name
+        for line in stream.split('\n'):
+            lst.parse_line(line)
         return lst
 
     def parse_line(self, line):
