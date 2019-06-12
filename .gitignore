@@ -2,6 +2,10 @@
 __pycache__/
 *.py[cod]
 
+# build / distribution directories
+build/
+dist/
+
 # various
 *.log
 *.backup
