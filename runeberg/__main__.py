@@ -148,11 +148,13 @@ def pager(generator, filters, as_string, select_action, per_page=25):
         choice = prompt_choice(len(displayed), select_action,
                                per_page, next=False)
         return displayed[choice - 1]
+
+    # Bow out gracefully
     if i == 0:
         print('Got no hits!, Sorry!')
     else:
         print('Thats all there is!, Sorry!')
-    exit()
+    exit(0)
 
 
 def prompt_choice(length, select_action, per_page, next=True):
@@ -172,7 +174,7 @@ def prompt_choice(length, select_action, per_page, next=True):
         if choice.lower() == 'n' and next:
             return None
         elif choice.lower() == 'q':
-            exit()
+            exit(0)
         elif int_choice and int_choice in range(1, length + 1):
             return int_choice
         else:
