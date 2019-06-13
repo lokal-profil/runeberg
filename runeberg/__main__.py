@@ -139,30 +139,15 @@ def pager(generator, filters, as_string, select_action, per_page=25):
         print('{0}. {1}'.format(i + 1, as_string(entry)))
         i += 1
         if i % per_page == 0:
-            prompt = (
-                'What do you want to do? [1-{0}] to {1}, '
-                '[N]ext {2}, [Q]uit: '.format(
-                    len(displayed), select_action, per_page))  # @TODO: deal with len(1)
-            while True:
-                choice = input(prompt)
-                try:
-                    int_choice = int(choice)
-                except ValueError:
-                    int_choice = None
-                    pass
-
-                if choice.lower() == 'n':
-                    break
-                elif choice.lower() == 'q':
-                    exit()
-                elif int_choice and int_choice in range(1, len(displayed) + 1):
-                    chosen_entry = displayed[int_choice - 1]
-                    return chosen_entry
-                else:
-                    print('Try again!')
+            choice = prompt_choice(len(displayed), select_action, per_page)
+            if choice is None:
+                continue
+            return displayed[choice - 1]
+    # handle the remainder
     if i % per_page > 0:
-        # prompt the last ones
-        raise NotImplementedError
+        choice = prompt_choice(len(displayed), select_action,
+                               per_page, next=False)
+        return displayed[choice - 1]
     if i == 0:
         print('Got no hits!, Sorry!')
     else:
@@ -170,12 +155,35 @@ def pager(generator, filters, as_string, select_action, per_page=25):
     exit()
 
 
+def prompt_choice(length, select_action, per_page, next=True):
+    """@TODO: docstring."""
+    prompt = 'What do you want to do? [{0}] to {1}, {2}[Q]uit: '.format(
+        '1' if length == 1 else '1-{length}',
+        select_action,
+        '[N]ext {per_page}, ' if next else '')
+    while True:
+        choice = input(prompt.format(length=length, per_page=per_page))
+        try:
+            int_choice = int(choice)
+        except ValueError:
+            int_choice = None
+            pass
+
+        if choice.lower() == 'n' and next:
+            return None
+        elif choice.lower() == 'q':
+            exit()
+        elif int_choice and int_choice in range(1, length + 1):
+            return int_choice
+        else:
+            print('Invalid choice. Try again!')
+
+
 def main():
     """@TODO: docstring."""
     filters = {}
     load_authors()
     load_works()
-    print(len(worked_authors))
     # display_works(5)
     display_authors(filters)
 
