@@ -9,6 +9,7 @@ from runeberg.lst_file import LstFile
 
 all_authors = None
 all_works = None
+worked_authors = None  # authors which appear in works
 
 
 def load_authors():
@@ -25,6 +26,7 @@ def load_authors():
 def load_works():
     """Load the works file."""
     global all_works
+    global worked_authors
     if not all_works:
         stream = downloader.download_works_file(save=False)
         Work = namedtuple('Work', 'title uid author_uids language year_start '
@@ -32,6 +34,11 @@ def load_works():
                           'original_language')
         lst_works = LstFile.from_stream(stream, func=Work)
         all_works = {work.uid: work for work in lst_works.data}
+
+        worked_authors = set()
+        for work in lst_works.data:
+            worked_authors.update(work.author_uids.split())
+            worked_authors.update(work.coauthor_uids.split())
 
 
 def filtered_work_generator(author=None, language=None):
@@ -60,6 +67,8 @@ def filtered_author_generator(nationality=None):
     """
     # @TODO: year based filters
     for author in all_authors.values():
+        if author.uid not in worked_authors:
+            continue
         if nationality and nationality not in author.nationalities.split():
             continue
         yield author
@@ -83,7 +92,7 @@ def author_as_string(author, short=False):
     year = year_range(author.birth, author.death)
     nat = ', '.join(author.nationalities.split())
     return '{name} ({year}) [{nat}]'.format(
-        name=name, year=year, nat=nat or '?')
+        name=name, year=year or '?', nat=nat or '?')
 
 
 def work_as_string(work):
@@ -101,29 +110,31 @@ def work_as_string(work):
             ', '.join(authors[:-1]), authors[-1])
 
     return '{title} ({year}) by {authors} [{lang}]'.format(
-        title=work.title, year=year, authors=author_strings or '?',
+        title=work.title, year=year or '?', authors=author_strings or '?',
         lang=work.language or '?')
 
 
-def display_works(per_page=25):
+def display_works(filters, per_page=25):
     """@TODO: docstring."""
-    chosen_work = pager(filtered_work_generator, work_as_string,
+    chosen_work = pager(filtered_work_generator, filters, work_as_string,
                         'download', per_page=per_page)
-    print('You picked {}...'.format(chosen_work.uid))
+    print('You picked {}, downloading...'.format(chosen_work.uid))
 
 
-def display_authors(per_page=25):
+def display_authors(filters, per_page=25):
     """@TODO: docstring."""
-    chosen_author = pager(filtered_author_generator, author_as_string,
+    chosen_author = pager(filtered_author_generator, filters, author_as_string,
                           'display their works', per_page=per_page)
     print('You picked {}...'.format(chosen_author.uid))
+    filters['author'] = chosen_author.uid
+    display_works(filters, per_page)
 
 
-def pager(generator, as_string, select_action, per_page=25):
+def pager(generator, filters, as_string, select_action, per_page=25):
     """@TODO: docstring."""
     displayed = []
     i = 0
-    for entry in generator():
+    for entry in generator(**filters):
         displayed.append(entry)
         print('{0}. {1}'.format(i + 1, as_string(entry)))
         i += 1
@@ -152,15 +163,21 @@ def pager(generator, as_string, select_action, per_page=25):
     if i % per_page > 0:
         # prompt the last ones
         raise NotImplementedError
-    print('Thats all there is!')
+    if i == 0:
+        print('Got no hits!, Sorry!')
+    else:
+        print('Thats all there is!, Sorry!')
+    exit()
 
 
 def main():
     """@TODO: docstring."""
+    filters = {}
     load_authors()
     load_works()
-    display_works(5)
-    display_authors(5)
+    print(len(worked_authors))
+    # display_works(5)
+    display_authors(filters)
 
 
 if __name__ == "__main__":
