@@ -46,7 +46,7 @@ def filtered_work_generator(author=None, language=None):
     for work in all_works.values():
         if author and author not in work.author_uids.split():
             continue
-        if language and language != work.language:
+        if language and language not in work.language.split():
             continue
         yield work
 
@@ -77,7 +77,7 @@ def author_as_string(author, short=False):
     """Format an author."""
     # @TODO: docstring
     # first_name last_name (year_b-year_d) [nat]
-    name = '{0} {1}'.format(author.first_name, author.surname)
+    name = '{0} {1}'.format(author.first_name, author.surname).strip()
     if short:
         return name
     year = year_range(author.birth, author.death)
@@ -107,32 +107,52 @@ def work_as_string(work):
 
 def display_works(per_page=25):
     """@TODO: docstring."""
-    displayed = []
-    i = 0
-    for work in filtered_work_generator():
-        displayed.append(work)
-        print('{0}. {1}'.format(i + 1, work_as_string(work)))
-        i += 1
-        if i == per_page:
-            # prompt [1-len(displayed)], [n]ext, [q]uit.
-            # either break and download
-            # or reset i + displayed
-            break
+    chosen_work = pager(filtered_work_generator, work_as_string,
+                        'download', per_page=per_page)
+    print('You picked {}...'.format(chosen_work.uid))
 
 
 def display_authors(per_page=25):
     """@TODO: docstring."""
+    chosen_author = pager(filtered_author_generator, author_as_string,
+                          'display their works', per_page=per_page)
+    print('You picked {}...'.format(chosen_author.uid))
+
+
+def pager(generator, as_string, select_action, per_page=25):
+    """@TODO: docstring."""
     displayed = []
     i = 0
-    for author in filtered_author_generator():
-        displayed.append(author)
-        print('{0}. {1}'.format(i + 1, author_as_string(author)))
+    for entry in generator():
+        displayed.append(entry)
+        print('{0}. {1}'.format(i + 1, as_string(entry)))
         i += 1
-        if i == per_page:
-            # prompt [1-len(displayed)], [n]ext, [q]uit.
-            # either break and display_work_as_string
-            # or reset i + displayed
-            break
+        if i % per_page == 0:
+            prompt = (
+                'What do you want to do? [1-{0}] to {1}, '
+                '[N]ext {2}, [Q]uit: '.format(
+                    len(displayed), select_action, per_page))  # @TODO: deal with len(1)
+            while True:
+                choice = input(prompt)
+                try:
+                    int_choice = int(choice)
+                except ValueError:
+                    int_choice = None
+                    pass
+
+                if choice.lower() == 'n':
+                    break
+                elif choice.lower() == 'q':
+                    exit()
+                elif int_choice and int_choice in range(1, len(displayed) + 1):
+                    chosen_entry = displayed[int_choice - 1]
+                    return chosen_entry
+                else:
+                    print('Try again!')
+    if i % per_page > 0:
+        # prompt the last ones
+        raise NotImplementedError
+    print('Thats all there is!')
 
 
 def main():
