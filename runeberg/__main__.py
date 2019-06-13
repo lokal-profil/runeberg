@@ -133,12 +133,10 @@ def display_authors(filters, per_page=25):
 def pager(generator, filters, as_string, select_action, per_page=25):
     """@TODO: docstring."""
     displayed = []
-    i = 0
-    for entry in generator(**filters):
+    for i, entry in enumerate(generator(**filters)):
         displayed.append(entry)
         print('{0}. {1}'.format(i + 1, as_string(entry)))
-        i += 1
-        if i % per_page == 0:
+        if (i + 1) % per_page == 0:
             choice = prompt_choice(len(displayed), select_action, per_page)
             if choice is None:
                 continue
