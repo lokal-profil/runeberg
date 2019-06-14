@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """Entry point for navigating the works at Runeberg.org."""
-# @ TODO: store string representations in all_authors
 import argparse
 from collections import namedtuple
 
@@ -24,6 +23,7 @@ def load_authors(in_use_authors):
     global all_authors
     if not all_authors:
         stream = downloader.download_author_file(save=False)
+        # @TODO replace by runeberg.Person once #3 gets implemented
         Author = namedtuple('Author', 'birth death surname first_name '
                                       'nationalities notes uid')
         lst_authors = LstFile.from_stream(stream, func=Author)
