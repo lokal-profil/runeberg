@@ -172,10 +172,11 @@ def pager(generator, filters, as_string, select_action, per_page):
     @param per_page: results to output per page.
     """
     displayed = []
-    for i, entry in enumerate(generator(**filters)):
+    i = 0  # in case generator is empty
+    for i, entry in enumerate(generator(**filters), 1):
         displayed.append(entry)
-        print('{0}. {1}'.format(i + 1, as_string(entry)))
-        if (i + 1) % per_page == 0:
+        print('{0}. {1}'.format(i, as_string(entry)))
+        if i % per_page == 0:
             choice = prompt_choice(len(displayed), select_action, per_page)
             if choice is None:
                 continue
