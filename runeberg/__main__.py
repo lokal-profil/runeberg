@@ -158,8 +158,7 @@ def pager(generator, filters, as_string, select_action, per_page):
 
     # handle the remainder
     if i % per_page > 0:
-        choice = prompt_choice(len(displayed), select_action,
-                               per_page, offer_next=False)
+        choice = prompt_choice(len(displayed), select_action, per_page=0)
         return displayed[choice - 1]
 
     # Bow out gracefully
@@ -170,12 +169,21 @@ def pager(generator, filters, as_string, select_action, per_page):
     exit(0)
 
 
-def prompt_choice(length, select_action, per_page, offer_next=True):
-    """@TODO: docstring."""
+def prompt_choice(length, select_action, per_page):
+    """
+    Prompt the user for a choice of entry, to continue or to quit.
+
+    An invalid choice will repeat the prompt.
+
+    @param length: the largest choosable value
+    @param select_action: description of what choosing an entry will result in.
+    @param per_page: number of results to offer next. Set to 0 to hide "next"
+        option.
+    """
     prompt = 'What do you want to do? [{0}] to {1}, {2}[Q]uit: '.format(
         '1' if length == 1 else '1-{length}',
         select_action,
-        '[N]ext {per_page}, ' if offer_next else '')
+        '[N]ext {per_page}, ' if per_page else '')
     while True:
         choice = input(prompt.format(length=length, per_page=per_page))
         try:
@@ -183,7 +191,7 @@ def prompt_choice(length, select_action, per_page, offer_next=True):
         except ValueError:
             int_choice = None
 
-        if choice.lower() == 'n' and offer_next:
+        if choice.lower() == 'n' and per_page:
             return None
         elif choice.lower() == 'q':
             exit(0)
