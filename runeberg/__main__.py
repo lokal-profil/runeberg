@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """Entry point for navigating the works at Runeberg.org."""
 # @ TODO: store string representations in all_authors
-from collections import namedtuple
 import argparse
+from collections import namedtuple
 
 import runeberg.download as downloader
 from runeberg.lst_file import LstFile
