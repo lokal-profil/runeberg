@@ -11,24 +11,34 @@ from runeberg.lst_file import LstFile
 DEFAULT_PER_PAGE = 25
 all_authors = None
 all_works = None
-worked_authors = None  # authors which appear in works  # @TODO: redo
 
 
-def load_authors():
-    """Load the authors file."""
+def load_authors(in_use_authors):
+    """
+    Load the authors file.
+
+    Loads all authors but only returns those which are used in works.
+    @param in_use_authors: set of all author and coauthor uids encountered in
+        works.
+    """
     global all_authors
     if not all_authors:
         stream = downloader.download_author_file(save=False)
         Author = namedtuple('Author', 'birth death surname first_name '
                                       'nationalities notes uid')
         lst_authors = LstFile.from_stream(stream, func=Author)
-        all_authors = {author.uid: author for author in lst_authors.data}
+        all_authors = {author.uid: author
+                       for author in lst_authors.data
+                       if author.uid in in_use_authors}
 
 
 def load_works():
-    """Load the works file."""
+    """
+    Load the works file.
+
+    @return: set of all author and coauthor uids.
+    """
     global all_works
-    global worked_authors
     if not all_works:
         stream = downloader.download_works_file(save=False)
         Work = namedtuple('Work', 'title uid author_uids language year_start '
@@ -37,10 +47,11 @@ def load_works():
         lst_works = LstFile.from_stream(stream, func=Work)
         all_works = {work.uid: work for work in lst_works.data}
 
-        worked_authors = set()
+        in_use_authors = set()
         for work in lst_works.data:
-            worked_authors.update(work.author_uids.split())
-            worked_authors.update(work.coauthor_uids.split())
+            in_use_authors.update(work.author_uids.split())
+            in_use_authors.update(work.coauthor_uids.split())
+    return in_use_authors
 
 
 # @TODO: add uid filter
@@ -71,8 +82,6 @@ def filtered_author_generator(nationality=None, **kargs):
     """
     # @TODO: year based filters
     for author in all_authors.values():
-        if author.uid not in worked_authors:
-            continue
         if (nationality and
                 nationality.lower() not in author.nationalities.split()):
             continue
@@ -260,9 +269,9 @@ def handle_args():
 
 
 def main(args):
-    """@TODO: docstring."""
-    load_authors()
-    load_works()
+    """Run main process."""
+    in_use_authors = load_works()
+    load_authors(in_use_authors)
     args.display_entries(args.filters, args.per_page)
 
 
