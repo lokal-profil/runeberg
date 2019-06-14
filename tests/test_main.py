@@ -96,16 +96,6 @@ class TestPager(unittest.TestCase):
         self.assertEqual(self.mock_prompt_choice.call_count, 1)
         self.assertEqual(result, 'one')
 
-    # you only reach
-    def test_pager_more_than_per_page_entries_select_on_first_prompt(self):
-        self.results = ['one', 'two', 'three', 'four']
-        self.mock_prompt_choice.side_effect = [1, 2]
-
-        result = pager(*self.input_bundle)
-        self.assertEqual(self.mock_to_string.call_count, 3)
-        self.assertEqual(self.mock_prompt_choice.call_count, 1)
-        self.assertEqual(result, 'one')
-
 
 class TestPromptChoice(unittest.TestCase):
 
