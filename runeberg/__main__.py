@@ -65,7 +65,8 @@ def filtered_work_generator(author=None, language=None, **kargs):
     @yield work
     """
     for work in all_works.values():
-        if author and author not in work.author_uids.split():
+        if (author and author not in work.author_uids.split()
+                and author not in work.coauthor_uids.split()):
             continue
         if language and language.lower() not in work.language.split():
             continue
