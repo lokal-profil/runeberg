@@ -129,20 +129,36 @@ def work_as_string(work):
 
 
 def display_works(filters, per_page):
-    """@TODO: docstring."""
+    """
+    Display a filtered list of works for the user to choose from.
+
+    @param filters: author and work filters to pass on
+    @param per_page: results to output per page.
+    @return: chosen work uid
+    """
     chosen_work = pager(filtered_work_generator, filters, work_as_string,
                         'download', per_page=per_page)
-    print('You picked {}, downloading...'.format(chosen_work.uid))
-    # @TODO: return uid back to main where download is triggered
+    print("You picked '{0}' [uid={1}], downloading…".format(
+        chosen_work.title, chosen_work.uid))
+    return chosen_work.uid
 
 
 def display_authors(filters, per_page):
-    """@TODO: docstring."""
+    """
+    Display a filtered list of authors for the user to choose works from.
+
+    Upon choosing one the list of works is displayed.
+
+    @param filters: author and work filters to pass on
+    @param per_page: results to output per page.
+    @return: chosen work uid
+    """
     chosen_author = pager(filtered_author_generator, filters, author_as_string,
                           'display their works', per_page=per_page)
-    print('You picked {}...'.format(chosen_author.uid))
+    print('Displaying works by {0} [uid={1}]…'.format(
+        author_as_string(chosen_author, short=True), chosen_author.uid))
     filters['author'] = chosen_author.uid
-    display_works(filters, per_page)
+    return display_works(filters, per_page)
 
 
 def pager(generator, filters, as_string, select_action, per_page):
@@ -153,7 +169,7 @@ def pager(generator, filters, as_string, select_action, per_page):
     @param filters: filter which is passed on to the filtered_work_generator.
     @param as_string: function to convert generator entries to strings.
     @param select_action: description of what choosing an entry will result in.
-    @param per_page: results to output per pages.
+    @param per_page: results to output per page.
     """
     displayed = []
     for i, entry in enumerate(generator(**filters)):
@@ -272,7 +288,8 @@ def main(args):
     """Run main process."""
     in_use_authors = load_works()
     load_authors(in_use_authors)
-    args.display_entries(args.filters, args.per_page)
+    work_uid = args.display_entries(args.filters, args.per_page)
+    print('calling download for {}'.format(work_uid))
 
 
 if __name__ == "__main__":
