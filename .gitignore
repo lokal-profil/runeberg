@@ -5,6 +5,7 @@ __pycache__/
 # build / distribution directories
 build/
 dist/
+*.egg-info/
 
 # various
 *.log
