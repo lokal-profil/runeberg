@@ -3,7 +3,7 @@
 import unittest
 import unittest.mock as mock
 
-from runeberg.__main__ import pager, prompt_choice
+from runeberg.__main__ import pager, prompt_choice, year_range
 
 
 class TestPager(unittest.TestCase):
@@ -204,3 +204,24 @@ class TestPromptChoice(unittest.TestCase):
 
         self.mock_input.assert_called_once()
         self.assertEqual(result, 3)
+
+
+class TestYearRange(unittest.TestCase):
+
+    """Test the year_range() method."""
+
+    def test_year_range_empty(self):
+        result = year_range('', '')
+        self.assertEqual(result, '')
+
+    def test_year_range_both(self):
+        result = year_range('123', '456')
+        self.assertEqual(result, '123–456')
+
+    def test_year_range_start_only(self):
+        result = year_range('123', '')
+        self.assertEqual(result, '123')
+
+    def test_year_range_end_only(self):
+        result = year_range('', '456')
+        self.assertEqual(result, '–456')

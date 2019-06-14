@@ -93,7 +93,7 @@ def year_range(y_start, y_end):
     """Format a year range."""
     year = y_start or ''
     if y_end:
-        year += '̣-' + y_end
+        year += '–' + y_end
     return year
 
 
@@ -205,7 +205,7 @@ def prompt_choice(length, select_action, per_page):
         option.
     """
     prompt = 'What do you want to do? [{0}] to {1}, {2}[Q]uit: '.format(
-        '1' if length == 1 else '1-{length}',
+        '1' if length == 1 else '1–{length}',
         select_action,
         '[N]ext {per_page}, ' if per_page else '')
     while True:
