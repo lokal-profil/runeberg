@@ -136,8 +136,16 @@ def display_authors(filters, per_page):
     display_works(filters, per_page)
 
 
-def pager(generator, filters, as_string, select_action, per_page=25):
-    """@TODO: docstring."""
+def pager(generator, filters, as_string, select_action, per_page):
+    """
+    Page through the results from a generator, prompting a choice.
+
+    @param generator: a generator for the entries to list.
+    @param filters: filter which is passed on to the filtered_work_generator.
+    @param as_string: function to convert generator entries to strings.
+    @param select_action: description of what choosing an entry will result in.
+    @param per_page: results to output per pages.
+    """
     displayed = []
     for i, entry in enumerate(generator(**filters)):
         displayed.append(entry)
