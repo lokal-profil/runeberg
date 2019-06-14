@@ -3,13 +3,15 @@
 """Entry point for navigating the works at Runeberg.org."""
 # @ TODO: store string representations in all_authors
 from collections import namedtuple
+import argparse
 
 import runeberg.download as downloader
 from runeberg.lst_file import LstFile
 
+DEFAULT_PER_PAGE = 25
 all_authors = None
 all_works = None
-worked_authors = None  # authors which appear in works
+worked_authors = None  # authors which appear in works  # @TODO: redo
 
 
 def load_authors():
@@ -41,7 +43,9 @@ def load_works():
             worked_authors.update(work.coauthor_uids.split())
 
 
-def filtered_work_generator(author=None, language=None):
+# @TODO: add uid filter
+# @TODO: year based filter
+def filtered_work_generator(author=None, language=None, **kargs):
     """
     Generate works matching the provided filter.
 
@@ -49,16 +53,16 @@ def filtered_work_generator(author=None, language=None):
     @param language: language to filter on
     @yield work
     """
-    # @TODO: year based filters
     for work in all_works.values():
         if author and author not in work.author_uids.split():
             continue
-        if language and language not in work.language.split():
+        if language and language.lower() not in work.language.split():
             continue
         yield work
 
 
-def filtered_author_generator(nationality=None):
+# @TODO: add uid filter
+def filtered_author_generator(nationality=None, **kargs):
     """
     Generate authors matching the provided filter.
 
@@ -69,7 +73,8 @@ def filtered_author_generator(nationality=None):
     for author in all_authors.values():
         if author.uid not in worked_authors:
             continue
-        if nationality and nationality not in author.nationalities.split():
+        if (nationality and
+                nationality.lower() not in author.nationalities.split()):
             continue
         yield author
 
@@ -114,14 +119,15 @@ def work_as_string(work):
         lang=work.language or '?')
 
 
-def display_works(filters, per_page=25):
+def display_works(filters, per_page):
     """@TODO: docstring."""
     chosen_work = pager(filtered_work_generator, filters, work_as_string,
                         'download', per_page=per_page)
     print('You picked {}, downloading...'.format(chosen_work.uid))
+    # @TODO: return uid back to main where download is triggered
 
 
-def display_authors(filters, per_page=25):
+def display_authors(filters, per_page):
     """@TODO: docstring."""
     chosen_author = pager(filtered_author_generator, filters, author_as_string,
                           'display their works', per_page=per_page)
@@ -141,6 +147,7 @@ def pager(generator, filters, as_string, select_action, per_page=25):
             if choice is None:
                 continue
             return displayed[choice - 1]
+
     # handle the remainder
     if i % per_page > 0:
         choice = prompt_choice(len(displayed), select_action,
@@ -178,14 +185,71 @@ def prompt_choice(length, select_action, per_page, offer_next=True):
             print('Invalid choice. Try again!')
 
 
-def main():
+class UpdateFilters(argparse.Action):
+    """Action whereby the value is stored in a predefined dictionary."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        """Store the arg and value as a key-value pair in a 'filters' dict."""
+        adict = getattr(namespace, 'filters')
+        adict.update({self.dest: values})
+
+
+def handle_args():
+    """
+    Parse and handle command line arguments. to get data from the database.
+
+    Options:
+        --author if present switch to first presenting a list of authors,
+            selecting an author presents the list of their works.
+        --lang Filter for works in this language
+        --nationality Filter for authors with this nationality, two letter
+            lower case iso code.
+        --uid The author_uid to filter on, if the -a flag is present, else the
+            work_uid to download.
+        --per_page <int> number of results to output per go. Defaults to 25.
+        --dir path to a directory where file should be downloaded.
+        --help Display this list
+    """
+    parser = argparse.ArgumentParser(description='Navigate Runeberg.org works '
+                                                 'and select one to download.')
+    parser.set_defaults(filters={})
+    parser.add_argument('-a', '--list_authors', dest='display_entries',
+                        action='store_const', const=display_authors,
+                        default=display_works,
+                        help=('if present switch to first presenting a list '
+                              'of authors, selecting an author presents the '
+                              'list of their works.'))
+    parser.add_argument('-n', '--per_page', type=int, default=DEFAULT_PER_PAGE,
+                        action='store', metavar='N',
+                        help=('number of results to output per go. Defaults '
+                              'to {}.'.format(DEFAULT_PER_PAGE)))
+    parser.add_argument('--dir', action='store', metavar='PATH',
+                        help=('path to a directory where file should be '
+                              'downloaded.'))
+
+    # filters
+    parser.add_argument('--lang', dest='language', action=UpdateFilters,
+                        metavar='XX', default=argparse.SUPPRESS,
+                        help=('filter for works in this language '
+                              '(2 letter code)'))
+    parser.add_argument('--nationality', action=UpdateFilters,
+                        metavar='XX', default=argparse.SUPPRESS,
+                        help=('filter for authors with this nationality, '
+                              '(2 letter ISO code).'))
+    parser.add_argument('--uid', action=UpdateFilters,
+                        default=argparse.SUPPRESS,
+                        help=('the author_uid to filter on, if the -a flag is '
+                              'present, else the work_uid to download.'))
+    return parser.parse_args()
+
+
+def main(args):
     """@TODO: docstring."""
-    filters = {}
     load_authors()
     load_works()
-    # display_works(5)
-    display_authors(filters)
+    args.display_entries(args.filters, args.per_page)
 
 
 if __name__ == "__main__":
-    main()
+    args = handle_args()
+    main(args)
