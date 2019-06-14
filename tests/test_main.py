@@ -3,7 +3,7 @@
 import unittest
 import unittest.mock as mock
 
-from runeberg.__main__ import pager
+from runeberg.__main__ import pager, prompt_choice
 
 
 class TestPager(unittest.TestCase):
@@ -27,13 +27,12 @@ class TestPager(unittest.TestCase):
                 print('hello %s' % r)
                 yield r
 
-        self.per_page = 3
         self.input_bundle = (
             generator,
-            {},
+            {},  # filters
             self.mock_to_string,
             'some action',
-            self.per_page
+            3  # per_page
         )
 
     def test_pager_no_entries(self):
@@ -106,3 +105,102 @@ class TestPager(unittest.TestCase):
         self.assertEqual(self.mock_to_string.call_count, 3)
         self.assertEqual(self.mock_prompt_choice.call_count, 1)
         self.assertEqual(result, 'one')
+
+
+class TestPromptChoice(unittest.TestCase):
+
+    """Test the prompt_choice() method."""
+
+    def setUp(self):
+
+        patcher = mock.patch('builtins.input')
+        self.mock_input = patcher.start()
+        self.addCleanup(patcher.stop)
+
+        self.input_bundle = (4, 'some action', 3)
+
+    def test_prompt_choice_q(self):
+        self.mock_input.return_value = 'q'
+        with self.assertRaises(SystemExit) as cm:
+            prompt_choice(*self.input_bundle)
+
+        self.mock_input.assert_called_once()
+        self.assertEqual(cm.exception.code, 0)
+
+    def test_prompt_choice_upper_q(self):
+        self.mock_input.return_value = 'Q'
+        with self.assertRaises(SystemExit) as cm:
+            prompt_choice(*self.input_bundle)
+
+        self.mock_input.assert_called_once()
+        self.assertEqual(cm.exception.code, 0)
+
+    def test_prompt_choice_n(self):
+        self.mock_input.return_value = 'n'
+        result = prompt_choice(*self.input_bundle)
+
+        self.mock_input.assert_called_once()
+        self.assertIsNone(result)
+
+    def test_prompt_choice_upper_n(self):
+        self.mock_input.return_value = 'N'
+        result = prompt_choice(*self.input_bundle)
+
+        self.mock_input.assert_called_once()
+        self.assertIsNone(result)
+
+    def test_prompt_choice_n_not_allowed(self):
+        self.mock_input.side_effect = ['n', 'N', '1']
+        result = prompt_choice(4, 'some action', 0)
+
+        self.assertEqual(self.mock_input.call_count, 3)
+        self.assertEqual(result, 1)
+
+    def test_prompt_choice_invalid(self):
+        self.mock_input.side_effect = ['foo', 'f', 'n']
+        result = prompt_choice(*self.input_bundle)
+
+        self.assertEqual(self.mock_input.call_count, 3)
+        self.assertIsNone(result)
+
+    def test_prompt_choice_invalid_int_zero(self):
+        self.mock_input.side_effect = ['0', 'n']
+        result = prompt_choice(*self.input_bundle)
+
+        self.assertEqual(self.mock_input.call_count, 2)
+        self.assertIsNone(result)
+
+    def test_prompt_choice_invalid_int_negative(self):
+        self.mock_input.side_effect = ['-2', 'n']
+        result = prompt_choice(*self.input_bundle)
+
+        self.assertEqual(self.mock_input.call_count, 2)
+        self.assertIsNone(result)
+
+    def test_prompt_choice_invalid_int_too_large(self):
+        self.mock_input.side_effect = ['5', 'n']
+        result = prompt_choice(*self.input_bundle)
+
+        self.assertEqual(self.mock_input.call_count, 2)
+        self.assertIsNone(result)
+
+    def test_prompt_choice_min_int(self):
+        self.mock_input.return_value = '1'
+        result = prompt_choice(*self.input_bundle)
+
+        self.mock_input.assert_called_once()
+        self.assertEqual(result, 1)
+
+    def test_prompt_choice_max_int(self):
+        self.mock_input.return_value = '4'
+        result = prompt_choice(*self.input_bundle)
+
+        self.mock_input.assert_called_once()
+        self.assertEqual(result, 4)
+
+    def test_prompt_choice_inbetween_int(self):
+        self.mock_input.return_value = '3'
+        result = prompt_choice(*self.input_bundle)
+
+        self.mock_input.assert_called_once()
+        self.assertEqual(result, 3)
