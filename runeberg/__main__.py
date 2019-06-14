@@ -256,9 +256,9 @@ def handle_args():
     parser.add_argument('-a', '--list_authors', dest='display_entries',
                         action='store_const', const=display_authors,
                         default=display_works,
-                        help=('if present switch to first presenting a list '
-                              'of authors, selecting an author presents the '
-                              'list of their works.'))
+                        help=('switch to first presenting a list of authors, '
+                              'selecting an author presents the list of their '
+                              'works.'))
     parser.add_argument('-n', '--per_page', type=int, default=DEFAULT_PER_PAGE,
                         action='store', metavar='N',
                         help=('number of results to output per go. Defaults '
@@ -266,6 +266,8 @@ def handle_args():
     parser.add_argument('--dir', action='store', metavar='PATH',
                         help=('path to a directory where file should be '
                               'downloaded.'))
+    parser.add_argument('--update', action='store_true',
+                        help='force update any previously downloaded files.')
 
     # filters
     parser.add_argument('--lang', dest='language', action=UpdateFilters,
@@ -289,6 +291,7 @@ def main(args):
     load_authors(in_use_authors)
     work_uid = args.display_entries(args.filters, args.per_page)
     print('calling download for {}'.format(work_uid))
+    downloader.get_work(work_uid, data_dir=args.dir, update=args.update)
 
 
 if __name__ == "__main__":
