@@ -54,9 +54,8 @@ def load_works():
     return in_use_authors
 
 
-# @TODO: add uid filter
 # @TODO: year based filter
-def filtered_work_generator(author=None, language=None, **kargs):
+def filtered_work_generator(author=None, language=None, uid=None, **kargs):
     """
     Generate works matching the provided filter.
 
@@ -65,6 +64,8 @@ def filtered_work_generator(author=None, language=None, **kargs):
     @yield work
     """
     for work in all_works.values():
+        if uid and uid != work.uid:
+            continue
         if (author and author not in work.author_uids.split()
                 and author not in work.coauthor_uids.split()):
             continue
@@ -73,16 +74,17 @@ def filtered_work_generator(author=None, language=None, **kargs):
         yield work
 
 
-# @TODO: add uid filter
-def filtered_author_generator(nationality=None, **kargs):
+# @TODO: year based filters
+def filtered_author_generator(nationality=None, uid=None, **kargs):
     """
     Generate authors matching the provided filter.
 
     @param nationality: nationality to filter on
     @yield work
     """
-    # @TODO: year based filters
     for author in all_authors.values():
+        if uid and uid != author.uid:
+            continue
         if (nationality and
                 nationality.lower() not in author.nationalities.split()):
             continue
@@ -98,9 +100,14 @@ def year_range(y_start, y_end):
 
 
 def author_as_string(author, short=False):
-    """Format an author."""
-    # @TODO: docstring
-    # first_name last_name (year_b-year_d) [nat]
+    """
+    Format an author.
+
+    Uses the format: first_name last_name (year_b-year_d) [nationalities]
+
+    @param author: Author to format
+    @param short: Whether to just return the name
+    """
     name = '{0} {1}'.format(author.first_name, author.surname).strip()
     if short:
         return name
@@ -111,8 +118,13 @@ def author_as_string(author, short=False):
 
 
 def work_as_string(work):
-    """Format a work."""
-    # title (year) by x, y and z [lang]
+    """
+    Format a work.
+
+    Uses the format: title (year) by author_1, author_2 and author_3 [langs]
+
+    If the work has no authors it falls back on coauthors.
+    """
     year = year_range(work.year_start, work.year_end)
     author_uids = work.author_uids.split() or work.coauthor_uids.split()
     authors = [author_as_string(all_authors[auth_uid], short=True)
@@ -159,6 +171,7 @@ def display_authors(filters, per_page):
     print('Displaying works by {0} [uid={1}]…'.format(
         author_as_string(chosen_author, short=True), chosen_author.uid))
     filters['author'] = chosen_author.uid
+    filters.pop('uid', None)  # since this was an author_uid not work_uid
     return display_works(filters, per_page)
 
 
@@ -268,6 +281,8 @@ def handle_args():
                               'downloaded.'))
     parser.add_argument('--update', action='store_true',
                         help='force update any previously downloaded files.')
+    parser.add_argument('--dry', action='store_true',
+                        help='simulate a run but without the final download.')
 
     # filters
     parser.add_argument('--lang', dest='language', action=UpdateFilters,
@@ -290,8 +305,8 @@ def main(args):
     in_use_authors = load_works()
     load_authors(in_use_authors)
     work_uid = args.display_entries(args.filters, args.per_page)
-    print('calling download for {}'.format(work_uid))
-    downloader.get_work(work_uid, data_dir=args.dir, update=args.update)
+    if not args.dry:
+        downloader.get_work(work_uid, data_dir=args.dir, update=args.update)
 
 
 if __name__ == "__main__":
