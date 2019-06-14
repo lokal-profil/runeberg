@@ -219,7 +219,7 @@ def prompt_choice(length, select_action, per_page):
             return None
         elif choice.lower() == 'q':
             exit(0)
-        elif int_choice and int_choice in range(1, length + 1):
+        elif int_choice and (1 <= int_choice <= length):
             return int_choice
         else:
             print('Invalid choice. Try again!')
