@@ -183,17 +183,14 @@ def pager(generator, filters, as_string, select_action, per_page):
                 continue
             return displayed[choice - 1]
 
-    # handle the remainder
-    if i % per_page > 0:
-        choice = prompt_choice(len(displayed), select_action, per_page=0)
-        return displayed[choice - 1]
-
-    # Bow out gracefully
     if i == 0:
         print('Got no hits!, Sorry!')
-    else:
-        print('Thats all there is!, Sorry!')
-    exit(0)
+        exit(0)
+    else:  # handle the remainder
+        if i % per_page == 0:
+            print('That is all there was!, Sorry!')
+        choice = prompt_choice(len(displayed), select_action, per_page=0)
+        return displayed[choice - 1]
 
 
 def prompt_choice(length, select_action, per_page):
