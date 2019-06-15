@@ -300,8 +300,9 @@ def handle_args():
     return parser.parse_args()
 
 
-def main(args):
+def main():
     """Run main process."""
+    args = handle_args()
     in_use_authors = load_works()
     load_authors(in_use_authors)
     work_uid = args.display_entries(args.filters, args.per_page)
@@ -310,5 +311,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    args = handle_args()
-    main(args)
+    main()
