@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Unit tests for __main__."""
+import argparse
 import unittest
 import unittest.mock as mock
 from collections import Sized, namedtuple
@@ -354,3 +355,32 @@ class TestFilteredWorkGenerator(BaseTestCase):
                    main.filtered_work_generator(language='sv',
                                                 author='foobar')]
         self.assert_length(results, 0)
+
+
+class TestUpdateFilters(BaseTestCase):
+    """Test the UpdateFilters argparse action."""
+
+    def setUp(self):
+        self.parser = argparse.ArgumentParser()
+        self.parser.set_defaults(filters={})
+
+    def test_update_filters(self):
+        self.parser.add_argument(
+            '--uid', action=main.UpdateFilters, default=argparse.SUPPRESS)
+        args = self.parser.parse_args(['--uid', 'FOO'])
+        self.assertEqual(vars(args), {'filters': {'uid': 'FOO'}})
+
+    def test_update_filters_with_dest(self):
+        self.parser.add_argument(
+            '--lang', dest='language', action=main.UpdateFilters,
+            default=argparse.SUPPRESS)
+        args = self.parser.parse_args(['--lang', 'FOO'])
+        self.assertEqual(vars(args), {'filters': {'language': 'FOO'}})
+
+    def test_update_filters_non_update_filter(self):
+        self.parser.add_argument(
+            '--lang', dest='language', action=main.UpdateFilters,
+            default=argparse.SUPPRESS)
+        self.parser.add_argument('--dir', action='store')
+        args = self.parser.parse_args(['--dir', 'FOO'])
+        self.assertEqual(vars(args), {'dir': 'FOO', 'filters': {}})
