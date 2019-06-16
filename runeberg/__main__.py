@@ -248,23 +248,9 @@ class UpdateFilters(argparse.Action):
 
 
 def handle_args():
-    """
-    Parse and handle command line arguments. to get data from the database.
-
-    Options:
-        --author if present switch to first presenting a list of authors,
-            selecting an author presents the list of their works.
-        --lang Filter for works in this language
-        --nationality Filter for authors with this nationality, two letter
-            lower case iso code.
-        --uid The author_uid to filter on, if the -a flag is present, else the
-            work_uid to download.
-        --per_page <int> number of results to output per go. Defaults to 25.
-        --dir path to a directory where file should be downloaded.
-        --help Display this list
-    """
-    parser = argparse.ArgumentParser(description='Navigate Runeberg.org works '
-                                                 'and select one to download.')
+    """Parse and handle command line arguments."""
+    parser = argparse.ArgumentParser(
+        description='Navigate Runeberg.org works and select one to download.')
     parser.set_defaults(filters={})
     parser.add_argument('-a', '--list_authors', dest='display_entries',
                         action='store_const', const=display_authors,
@@ -277,12 +263,13 @@ def handle_args():
                         help=('number of results to output per go. Defaults '
                               'to {}.'.format(DEFAULT_PER_PAGE)))
     parser.add_argument('--dir', action='store', metavar='PATH',
-                        help=('path to a directory where file should be '
+                        help=('path to directory where files should be '
                               'downloaded.'))
     parser.add_argument('--update', action='store_true',
-                        help='force update any previously downloaded files.')
+                        help='forced update of any previously downloaded '
+                             'files.')
     parser.add_argument('--dry', action='store_true',
-                        help='simulate a run but without the final download.')
+                        help='simulated run without the final download.')
 
     # filters
     parser.add_argument('--lang', dest='language', action=UpdateFilters,
