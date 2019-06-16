@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Unit tests for lst file."""
 import unittest
+import unittest.mock as mock
 from collections import namedtuple
 
 from runeberg.lst_file import LstFile
@@ -161,3 +162,36 @@ class TestParseLineFunc(unittest.TestCase):
         line = '1858|1915|Aalberg||#\n'
         with self.assertRaises(TypeError):
             self.lst_file.parse_line(line)
+
+
+class TestFromStream(unittest.TestCase):
+
+    """Test from_stream() method."""
+
+    def setUp(self):
+        self.text = (
+            'a line|some values\n'
+            '# a comment\n'
+            'another line|some more values'
+        )
+        self.file_name = 'foo.lst'
+
+        patcher = mock.patch('runeberg.lst_file.LstFile.parse_line')
+        self.mock_parse_line = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_from_file_non_empty_file(self):
+        result = LstFile.from_stream(self.text, self.file_name)
+        self.assertEqual(result.name, 'foo.lst')
+        self.assertEqual(self.mock_parse_line.call_count, 3)
+
+    def test_from_file_non_empty_file_no_filename(self):
+        result = LstFile.from_stream(self.text)
+        self.assertEqual(result.name, '')
+        self.assertEqual(self.mock_parse_line.call_count, 3)
+
+    def test_from_file_non_empty_file_w_func(self):
+        result = LstFile.from_stream(self.text, self.file_name, func=dict)
+        self.assertEqual(result.name, 'foo.lst')
+        self.assertEqual(result._func, dict)
+        self.assertEqual(self.mock_parse_line.call_count, 3)
