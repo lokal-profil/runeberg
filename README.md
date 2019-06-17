@@ -3,6 +3,14 @@
 A library and command line application for downloading and parsing works from
 [Projekt Runeberg](http://runeberg.org).
 
+## Installation
+
+You can install the Runeberg from [PyPI](https://pypi.org/project/runeberg/):
+
+    pip install runeberg
+
+It is supported on Python 3.6 and above.
+
 ## Usage as a command line application
 
 After installing `runeberg` simply call the program to get a paged output of
