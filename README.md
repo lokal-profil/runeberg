@@ -6,7 +6,7 @@ A library for downloading and parsing works from [Projekt Runeberg](http://runeb
 
 After installing `runeberg` simply call the program to get a paged output of
 works to download, follow the prompts to download (and unpack) the files.
-```
+```console
 $ runeberg
 1. "Det Ringer!" Skämt i en akt (1902) by Helena Nyblom [sv]
 2. "Då sa' kungen..." : Kungliga anekdoter under hundra år (1946) by ? [sv]
@@ -23,7 +23,7 @@ What do you want to do? [1–25] to download, [N]ext 25, [Q]uit: █
 
 Use the `-a` flag to start with a list of authors for which a filtered list of
 works will be presented:
-```
+```console
 $ python runeberg -a
 1. Ülev Aaloe (1944) [ee]
 2. Simon Aberstén (1865–1937) [se]
