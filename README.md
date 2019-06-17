@@ -1,6 +1,7 @@
 # runeberg  [![Build Status](https://travis-ci.org/lokal-profil/runeberg.svg?branch=master)](https://travis-ci.org/lokal-profil/runeberg)[![codecov.io Code Coverage](https://img.shields.io/codecov/c/github/lokal-profil/runeberg.svg?maxAge=2592000)](https://codecov.io/github/lokal-profil/runeberg?branch=master)
 
-A library for downloading and parsing works from [Projekt Runeberg](http://runeberg.org).
+A library and command line application for downloading and parsing works from
+[Projekt Runeberg](http://runeberg.org).
 
 ## Usage as a command line application
 
@@ -24,7 +25,7 @@ What do you want to do? [1–25] to download, [N]ext 25, [Q]uit: █
 Use the `-a` flag to start with a list of authors for which a filtered list of
 works will be presented:
 ```console
-$ python runeberg -a
+$ runeberg -a
 1. Ülev Aaloe (1944) [ee]
 2. Simon Aberstén (1865–1937) [se]
 3. Selma Abrahamsson (1872–1911) [fi]
@@ -44,7 +45,7 @@ What do you want to do? [1–2] to download, [Q]uit: █
 
 Use the `-h` flag to see a full list of options and filters.
 
-## Usage as library
+## Usage as a library
 
 First determine the identifier of the work you wish to download. For e.g.
 <http://runeberg.org/aldrigilif/> this `<uid>` would be `aldrigilif`.
