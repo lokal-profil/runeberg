@@ -357,6 +357,42 @@ class TestFilteredWorkGenerator(BaseTestCase):
         self.assert_length(results, 0)
 
 
+class TestDisplayAuthors(unittest.TestCase):
+    """Test the display_authors() method."""
+
+    def setUp(self):
+        Author = namedtuple('Author', 'uid')
+        patcher = mock.patch('runeberg.__main__.pager')
+        self.mock_pager = patcher.start()
+        self.mock_pager.return_value = Author('foo')
+        self.addCleanup(patcher.stop)
+
+        patcher = mock.patch('runeberg.__main__.display_works')
+        self.mock_display_works = patcher.start()
+        self.mock_display_works.return_value = 'bar'
+        self.addCleanup(patcher.stop)
+
+        patcher = mock.patch('runeberg.__main__.author_as_string')
+        self.mock_author_as_string = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_display_authors_defaults(self):
+        results = main.display_authors({}, 5)
+        self.mock_pager.called_once_with(
+            main.filtered_author_generator, {}, self.mock_author_as_string,
+            'display their works', per_page=5)
+        self.mock_display_works.called_once_with({'author': 'foo'}, 5)
+        self.assertEqual(results, 'bar')
+
+    def test_display_authors_no_uid(self):
+        results = main.display_authors({'uid': 'foobar'}, 5)
+        self.mock_pager.called_once_with(
+            main.filtered_author_generator, {'uid': 'foobar'},
+            main.author_as_string, 'display their works', per_page=5)
+        self.mock_display_works.called_once_with({'author': 'foo'}, 5)
+        self.assertEqual(results, 'bar')
+
+
 class TestUpdateFilters(BaseTestCase):
     """Test the UpdateFilters argparse action."""
 
