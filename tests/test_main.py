@@ -384,3 +384,58 @@ class TestUpdateFilters(BaseTestCase):
         self.parser.add_argument('--dir', action='store')
         args = self.parser.parse_args(['--dir', 'FOO'])
         self.assertEqual(vars(args), {'dir': 'FOO', 'filters': {}})
+
+
+class TestHandleArgs(unittest.TestCase):
+    """Test the handle_args() method."""
+
+    def test_handle_args_defaults(self):
+        argv = []
+        args = main.handle_args(argv)
+        self.assertEquals(
+            vars(args),
+            {
+                'dir': None,
+                'display_entries': main.display_works,
+                'dry': False,
+                'filters': {},
+                'per_page': 25,
+                'update': False
+            })
+
+    def test_handle_args_handle_all_long_args(self):
+        argv = ['--list_authors', '--update', '--dry',
+                '--per_page', '5',
+                '--dir', 'something/foo/',
+                '--lang', 'sv',
+                '--nationality', 'se',
+                '--uid', 'foo']
+        args = main.handle_args(argv)
+        self.assertEquals(
+            vars(args),
+            {
+                'dir': 'something/foo/',
+                'display_entries': main.display_authors,
+                'dry': True,
+                'filters': {
+                    'language': 'sv',
+                    'nationality': 'se',
+                    'uid': 'foo'},
+                'per_page': 5,
+                'update': True
+            })
+
+    def test_handle_args_handle_all_short_args(self):
+        argv = ['-a',
+                '-n', '5']
+        args = main.handle_args(argv)
+        self.assertEquals(
+            vars(args),
+            {
+                'dir': None,
+                'display_entries': main.display_authors,
+                'dry': False,
+                'filters': {},
+                'per_page': 5,
+                'update': False
+            })

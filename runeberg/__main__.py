@@ -247,8 +247,13 @@ class UpdateFilters(argparse.Action):
         adict.update({self.dest: values})
 
 
-def handle_args():
-    """Parse and handle command line arguments."""
+def handle_args(argv=None):
+    """
+    Parse and handle command line arguments.
+
+    @param argv: arguments to parse. Defaults to sys.argv[1:].
+    @return: argparse.Namespace
+    """
     parser = argparse.ArgumentParser(
         description='Navigate Runeberg.org works and select one to download.')
     parser.set_defaults(filters={})
@@ -284,7 +289,7 @@ def handle_args():
                         default=argparse.SUPPRESS,
                         help=('the author_uid to filter on, if the -a flag is '
                               'present, else the work_uid to download.'))
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main():
