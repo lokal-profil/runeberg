@@ -3,12 +3,6 @@ dist: xenial  # required for Python >= 3.7
 language: python
 matrix:
   include:
-    - python: 3.5
-      env:
-         - TOX_ENV=flake8
-         - TOX_ENV=isort
-         - TOX_ENV=pydocstyle
-         - TOX_ENV=py35
     - python: 3.6
       env:
          - TOX_ENV=flake8
@@ -21,7 +15,7 @@ matrix:
          - TOX_ENV=isort
          - TOX_ENV=pydocstyle
          - TOX_ENV=py37
-    - python: 3.8
+    - python: 3.8-dev
       env:
          - TOX_ENV=flake8
          - TOX_ENV=isort
