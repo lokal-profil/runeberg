@@ -5,22 +5,13 @@ matrix:
   include:
     - python: 3.6
       env:
-         - TOX_ENV=flake8
-         - TOX_ENV=isort
-         - TOX_ENV=pydocstyle
-         - TOX_ENV=py36
+         - TOX_ENV=travis
     - python: 3.7
       env:
-         - TOX_ENV=flake8
-         - TOX_ENV=isort
-         - TOX_ENV=pydocstyle
-         - TOX_ENV=py37
+         - TOX_ENV=travis
     - python: 3.8-dev
       env:
-         - TOX_ENV=flake8
-         - TOX_ENV=isort
-         - TOX_ENV=pydocstyle
-         - TOX_ENV=py38
+         - TOX_ENV=travis
 install:
  - pip install codecov
  - pip install tox-travis
