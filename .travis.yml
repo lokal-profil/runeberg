@@ -1,15 +1,31 @@
 sudo: false
 language: python
-python:
- - "3.5"
- - "3.6"
- - "3.7"
- - "3.8"
-env:
- - TOX_ENV=flake8
- - TOX_ENV=isort
- - TOX_ENV=pydocstyle
- - TOX_ENV=py36
+matrix:
+  include:
+    - python: 3.5
+      env:
+         - TOX_ENV=flake8
+         - TOX_ENV=isort
+         - TOX_ENV=pydocstyle
+         - TOX_ENV=py35
+    - python: 3.6
+      env:
+         - TOX_ENV=flake8
+         - TOX_ENV=isort
+         - TOX_ENV=pydocstyle
+         - TOX_ENV=py36
+    - python: 3.7
+      env:
+         - TOX_ENV=flake8
+         - TOX_ENV=isort
+         - TOX_ENV=pydocstyle
+         - TOX_ENV=py37
+    - python: 3.8
+      env:
+         - TOX_ENV=flake8
+         - TOX_ENV=isort
+         - TOX_ENV=pydocstyle
+         - TOX_ENV=py38
 install:
  - pip install codecov
  - pip install tox-travis
