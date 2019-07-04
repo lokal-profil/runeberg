@@ -15,7 +15,7 @@ class Page(object):
     BLANK_LABELS = ('blank', '(blank)')  # labels known to indicate blank page
     DEFAULT_BLANK = '<blank>'  # default label to use for blank pages
 
-    def __init__(self, uid, label=None, image=None, ocr=None, proofread=None):
+    def __init__(self, uid, label=None, image=None, text=None, proofread=None):
         """
         Initialise a Page.
 
@@ -24,14 +24,14 @@ class Page(object):
         @param label: the real printable label of the page, ordinarily the page
             number.
         @param image: path to the image of the page
-        @param ocr: ocr:ed (and potentially proofread) text of the page
+        @param text: ocr:ed (and potentially proofread) text of the page
         @param proofread: whether the page has been fully proofread.
         """
         self.uid = uid  # unique identifier of the page (often a padded number)
         self.label = label or ''  # what the numbering on the actual page is
         self.image = image or ''  # path to the image
         self.image_no = None  # page in djvu file on which the image appears
-        self.ocr = ocr or ''  # ocr:ed text of the page
+        self.text = text or ''  # ocr:ed text of the page
         self.is_proofread = proofread  # bool or None in the case of blank page
         self.set_blank()
 
@@ -61,19 +61,19 @@ class Page(object):
 
     def check_blank(self):
         """Sanity check blank pages and blank page candidates."""
-        if self.is_proofread is None and self.ocr.strip() != '':
+        if self.is_proofread is None and self.text.strip() != '':
             warnings.warn(
-                '{0} ({1}) was labelled "blank" but ocr is not empty. Either '
+                '{0} ({1}) was labelled "blank" but text is not empty. Either '
                 'clear out the ocr text or set `is_proofread=False`'.format(
                     self.uid, self.label),
                 UserWarning)
-        elif self.is_proofread and self.ocr.strip() == '':
+        elif self.is_proofread and self.text.strip() == '':
             warnings.warn(
                 '{0} ({1}) was labelled as proofread but is blank. Either '
                 're-add the ocr text or set `is_proofread=None`'.format(
                     self.uid, self.label),
                 UserWarning)
-        elif self.is_proofread == False and self.ocr.strip() == '':
+        elif self.is_proofread is False and self.text.strip() == '':
             warnings.warn(
                 '{0} ({1}) might be blank. Check the image and if truly blank '
                 'set `is_proofread=None`'.format(
@@ -111,7 +111,7 @@ class Page(object):
     def get_chapters(self):
         """Extract all chapter names on page."""
         if not hasattr(self, '_chapters'):
-            soup = BeautifulSoup(self.ocr, features='html5lib')
+            soup = BeautifulSoup(self.text, features='html5lib')
             self._chapters = [chapter.get('name')
                               for chapter in soup.find_all('chapter')]
             if any(not chapter for chapter in self._chapters):
@@ -123,7 +123,7 @@ class Page(object):
     def rename_chapter(self, old_name, new_name):
         """Rename the first occurrence of a chapter."""
         base_str = '<chapter name="{}">'
-        self.ocr = self.ocr.replace(
+        self.text = self.text.replace(
             base_str.format(old_name),
             base_str.format(new_name),
             1)

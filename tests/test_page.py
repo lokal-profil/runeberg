@@ -24,11 +24,11 @@ class TestGetChapters(unittest.TestCase):
         self.page = Page('0001')
 
     def test_get_chapters_empty(self):
-        self.page.ocr = ''
+        self.page.text = ''
         self.assertEqual(self.page.get_chapters(), [])
 
     def test_get_chapters_no_chapters(self):
-        self.page.ocr = (
+        self.page.text = (
             'row 1\n'
             'row 2\n'
             'row3'
@@ -36,7 +36,7 @@ class TestGetChapters(unittest.TestCase):
         self.assertEqual(self.page.get_chapters(), [])
 
     def test_get_chapters_unique_chapters(self):
-        self.page.ocr = (
+        self.page.text = (
             'row 1\n'
             'pre<chapter name="chp1">post\n'
             'row 2\n'
@@ -47,7 +47,7 @@ class TestGetChapters(unittest.TestCase):
         self.assertEqual(self.page.get_chapters(), expected)
 
     def test_get_chapters_non_unique_chapters(self):
-        self.page.ocr = (
+        self.page.text = (
             'row 1\n'
             'pre<chapter name="chp1">post\n'
             'row 2\n'
@@ -59,7 +59,7 @@ class TestGetChapters(unittest.TestCase):
         self.assertEqual(self.page.get_chapters(), expected)
 
     def test_get_chapters_missing_attribute(self):
-        self.page.ocr = (
+        self.page.text = (
             'row 1\n'
             'pre<chapter>post\n'
             'row 2\n'
@@ -79,10 +79,10 @@ class TestRenameChapter(unittest.TestCase):
             'row 2\n'
             'row3'
         )
-        self.page = Page('0001', ocr=text)
+        self.page = Page('0001', text=text)
 
     def test_rename_chapter_no_chapter(self):
-        self.page.ocr = (
+        self.page.text = (
             'row 1\n'
             'row 2\n'
             'row3'
@@ -93,10 +93,10 @@ class TestRenameChapter(unittest.TestCase):
             'row3'
         )
         self.page.rename_chapter('chp1', 'foo')
-        self.assertEqual(self.page.ocr, expected)
+        self.assertEqual(self.page.text, expected)
 
     def test_rename_chapter_single_match(self):
-        self.page.ocr = (
+        self.page.text = (
             'row 1\n'
             'pre<chapter name="chp1">post\n'
             'row 2\n'
@@ -111,10 +111,10 @@ class TestRenameChapter(unittest.TestCase):
             'row3'
         )
         self.page.rename_chapter('chp2', 'foo')
-        self.assertEqual(self.page.ocr, expected)
+        self.assertEqual(self.page.text, expected)
 
     def test_rename_chapter_multiple_matches(self):
-        self.page.ocr = (
+        self.page.text = (
             'row 1\n'
             'pre<chapter name="chp1">post\n'
             'row 2\n'
@@ -131,7 +131,7 @@ class TestRenameChapter(unittest.TestCase):
             'pre<chapter name="chp1">post\n'
         )
         self.page.rename_chapter('chp1', 'foo')
-        self.assertEqual(self.page.ocr, expected)
+        self.assertEqual(self.page.text, expected)
 
 
 class TestCheckBlank(unittest.TestCase):
@@ -144,23 +144,23 @@ class TestCheckBlank(unittest.TestCase):
             'row 2\n'
             'row3'
         )
-        self.page = Page('0001', ocr=text)
+        self.page = Page('0001', text=text)
 
     @unittest.expectedFailure  # hack to assert not Warns
     def test_check_blank_empty_and_blank(self):
-        self.page.ocr = ''
+        self.page.text = ''
         self.page.is_proofread = None
         with self.assertWarnsRegex(UserWarning, r'is blank'):
             self.page.check_blank()
 
     def test_check_blank_empty_and_proofread(self):
-        self.page.ocr = ''
+        self.page.text = ''
         self.page.is_proofread = True
         with self.assertWarnsRegex(UserWarning, r'is blank'):
             self.page.check_blank()
 
     def test_check_blank_empty_and_not_proofread(self):
-        self.page.ocr = ''
+        self.page.text = ''
         self.page.is_proofread = False
         with self.assertWarnsRegex(UserWarning, r'might be blank'):
             self.page.check_blank()
