@@ -75,7 +75,7 @@ class Work(object):
     @property
     def text(self):
         """Return all the text of the work."""
-        return '\n'.join([page.text for page in self.pages])
+        return '\n'.join([page.text for page in self.pages.values()])
 
     def runeberg_url(self):
         """Return the base url on runeberg.org."""
