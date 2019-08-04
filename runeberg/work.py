@@ -42,6 +42,7 @@ class Work(object):
         self.articles = OrderedDict()  # the included articles
         self.metadata = {}  # a verbatim copy of the runeberg.org metadata
         self.identifiers = {}  # identifiers for the work in external sources
+        self.image_sources = {}  # sources for non-runeberg.org originated scan
         self.people = {}  # people involved with the work
         self.djvu = None  # djvu file of the whole work
         self.image_type = None  # the default file extension of the image files
@@ -69,6 +70,7 @@ class Work(object):
         work.load_articles(base_path, chapters)
         work.load_metadata(base_path)
         work.identifiers = work.parse_marc()
+        work.image_sources = work.parse_image_source()
         work.parse_people(known_people)
         return work
 
@@ -272,15 +274,37 @@ class Work(object):
         @return dict of identifiers
         """
         data = self.metadata.get('MARC')
-        identifiers = {}
+        return Work.parse_multivalued_mappings(data, 'identifiers')
+
+    def parse_image_source(self):
+        """
+        Parse the multivalued IMAGE_SOURCE metadata entry.
+
+        @return dict of image sources
+        """
+        data = self.metadata.get('IMAGE_SOURCE')
+        return Work.parse_multivalued_mappings(data, 'image sources')
+
+    @staticmethod
+    def parse_multivalued_mappings(data, label):
+        """
+        Parse the multivalued mappings.
+
+        Values are separated by a single space. Mapping pairs use a colon.
+
+        @param data: string holding the multivalued mapping data to parse
+        @param label: string describing the data for use in errors
+        @return dict of mappings
+        """
+        parsed_data = {}
         if data:
             for entry in data.split(' '):
                 field, _, value = entry.partition(':')
-                if field in identifiers.keys():
+                if field in parsed_data.keys():
                     raise NotImplementedError(
-                        'Need to handle non-unique identifiers')
-                identifiers[field] = value
-        return identifiers
+                        'Need to handle non-unique {0}'.format(label))
+                parsed_data[field] = value
+        return parsed_data
 
     def parse_people(self, known_people=None):
         """
