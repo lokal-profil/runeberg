@@ -137,21 +137,62 @@ class TestParseMarc(unittest.TestCase):
 
     def setUp(self):
         self.work = Work('test')
-        self.work.metadata = {'MARC': ''}
+        self.work.metadata = {'MARC': 'some_data'}
 
-    def test_parse_marc_empty(self):
-        del self.work.metadata['MARC']
-        self.assertEqual(self.work.parse_marc(), {})
+        patcher = mock.patch('runeberg.work.Work.parse_multivalued_mappings')
+        self.mock_parse_multivalued = patcher.start()
+        self.mock_parse_multivalued.return_value = 'parsed_mapping'
+        self.addCleanup(patcher.stop)
 
-    def test_parse_marc_single(self):
-        self.work.metadata['MARC'] = 'libris:1285211'
-        self.assertEqual(self.work.parse_marc(), {'libris': '1285211'})
+    def test_parse_marc(self):
+        self.assertEqual(self.work.parse_marc(), 'parsed_mapping')
+        self.mock_parse_multivalued.assert_called_once_with(
+            'some_data', 'identifiers')
 
-    def test_parse_marc_multiple(self):
-        self.work.metadata['MARC'] = 'bibsys:123 rex:456'
+
+class TestParseImageSource(unittest.TestCase):
+
+    """Unit tests for parse_image_source."""
+
+    def setUp(self):
+        self.work = Work('test')
+        self.work.metadata = {'IMAGE_SOURCE': 'some_data'}
+
+        patcher = mock.patch('runeberg.work.Work.parse_multivalued_mappings')
+        self.mock_parse_multivalued = patcher.start()
+        self.mock_parse_multivalued.return_value = 'parsed_mapping'
+        self.addCleanup(patcher.stop)
+
+    def test_parse_image_source(self):
+        self.assertEqual(self.work.parse_image_source(), 'parsed_mapping')
+        self.mock_parse_multivalued.assert_called_once_with(
+            'some_data', 'image sources')
+
+
+class TestParseMultivaluedMappings(unittest.TestCase):
+
+    """Unit tests for parse_multivalued_mappings."""
+
+    def test_parse_multivalued_mappings_empty(self):
+        data = ''
+        self.assertEqual(Work.parse_multivalued_mappings(data, 'a label'), {})
+
+    def test_parse_multivalued_mappings_single(self):
+        data = 'libris:1285211'
         self.assertEqual(
-            self.work.parse_marc(),
+            Work.parse_multivalued_mappings(data, 'a label'),
+            {'libris': '1285211'})
+
+    def test_parse_multivalued_mappings_multiple(self):
+        data = 'bibsys:123 rex:456'
+        self.assertEqual(
+            Work.parse_multivalued_mappings(data, 'a label'),
             {'bibsys': '123', 'rex': '456'})
+
+    def test_parse_multivalued_mappings_duplicate(self):
+        data = 'bibsys:123 bibsys:456'
+        with self.assertRaisesRegex(NotImplementedError, r'a label'):
+            Work.parse_multivalued_mappings(data, 'a label')
 
 
 class TestSetupDisambiguationCounter(unittest.TestCase):
