@@ -322,7 +322,7 @@ class Work(object):
                 self.people[field] = [known_people[uid]
                                       for uid in uids.split(' ')]
 
-    def to_djvu(self, silent=True):
+    def to_djvu(self, silent=True, force=False):
         """
         Convert all images to a single DjVu file.
 
@@ -330,17 +330,29 @@ class Work(object):
 
         @param silent: silence the very chatty stderr output
         @type silent: Bool
+        @param force: force re-generating the djvu, discarding any pre-existing
+            file
+        @type force: Bool
         @return: path to djvu file
         """
-        if self.djvu is not None:
-            # checks if already converted
-            # @TODO: notify the user somehow
-            return self.djvu
+        base_path = os.path.dirname(self.pages.first().image)
+        book_djvu = os.path.join(base_path, 'book.djvu')
+        if not force:
+            if self.djvu is not None:
+                # checks if already converted
+                # @TODO: notify the user somehow
+                return self.djvu
+            if os.path.isfile(book_djvu):
+                # check if converted file already exists
+                # @TODO: notify the user somehow
+                self.djvu = book_djvu
+                for i, page in enumerate(self.pages.values(), 1):
+                    page.image_no = i
+                return self.djvu
         if not Work.can_djvu():
             # @TODO: should find a more suitable exception
             raise Exception('Need DjVuLibre to convert to djvu')
-        base_path = None
-        book_djvu = None
+
         tmp_djvu = 'tmp.djvu'
         stderr = DEVNULL if silent else None
         for i, page in tqdm(enumerate(self.pages.values(), 1),
@@ -362,8 +374,6 @@ class Work(object):
                     'to DjVu')
 
             if i == 1:
-                base_path = os.path.dirname(page.image)
-                book_djvu = os.path.join(base_path, 'book.djvu')
                 # djvm to create multi-page file from first page
                 run(['djvm', '-c', book_djvu, tmp_djvu],
                     check=True, stderr=stderr)
