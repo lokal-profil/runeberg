@@ -72,6 +72,11 @@ class Work(object):
         work.parse_people(known_people)
         return work
 
+    @property
+    def text(self):
+        """Return all the text of the work."""
+        return self.pages.text
+
     def runeberg_url(self):
         """Return the base url on runeberg.org."""
         return '{0}/{1}/'.format(SITE, self.uid)

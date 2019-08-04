@@ -193,7 +193,7 @@ class TestLoadArticle(unittest.TestCase):
 
         patcher = mock.patch('runeberg.work.Work.parse_range')
         self.mock_parse_range = patcher.start()
-        self.mock_parse_range.return_value = [Page('0001', ocr='abc')]
+        self.mock_parse_range.return_value = [Page('0001', text='abc')]
         self.addCleanup(patcher.stop)
 
         patcher = mock.patch('runeberg.page.Page.rename_chapter')
@@ -321,9 +321,9 @@ class TestLoadArticle(unittest.TestCase):
         self.mock_disambiguation_counter.return_value = Counter({'A': 1})
         self.mock_get_chapters.return_value = ['A']
         self.mock_parse_range.return_value = [
-            Page('0001', ocr='abc'),
-            Page('0002', ocr='abc'),
-            Page('0003', ocr='abc')]
+            Page('0001', text='abc'),
+            Page('0002', text='abc'),
+            Page('0003', text='abc')]
 
         with self.assertRaises(ReconciliationError):
             self.work.load_articles(self.base_path, chapters,
@@ -418,3 +418,20 @@ class TestDetermineImageFileType(unittest.TestCase):
 
         self.work.determine_image_file_type('base', 'img')
         self.assertEquals(self.work.image_type, '.jpg')
+
+
+class TestText(unittest.TestCase):
+
+    """Unit tests for text property."""
+
+    def setUp(self):
+        self.work = Work('uid')
+
+    def test_text_no_pages(self):
+        self.assertEqual(self.work.text, '')
+
+    def test_text(self):
+        with mock.patch('runeberg.page_range.PageRange.text',
+                        new_callable=mock.PropertyMock) as mock_pagerange_text:
+            mock_pagerange_text.return_value = 'text in the page range'
+            self.assertEqual(self.work.text, 'text in the page range')

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 """Unit tests for article."""
 import unittest
+import unittest.mock as mock
 
 from runeberg.article import Article
 from runeberg.page import Page
+from runeberg.page_range import PageRange
 
 
 class TestIsTocHeader(unittest.TestCase):
@@ -49,3 +51,35 @@ class TestUid(unittest.TestCase):
     def test_uid_with_disambig(self):
         self.article.disambig = 2
         self.assertEqual(self.article.uid, 'Genesis (2)')
+
+
+class TestText(unittest.TestCase):
+
+    def setUp(self):
+        self.article = Article('Genesis')
+        # cannot get instance attribute mocking to work for page
+        self.page = Page('page_1', text='This is the page text.')
+        self.page_range = PageRange([])
+
+        patcher = mock.patch('runeberg.page_range.PageRange.text',
+                             new_callable=mock.PropertyMock)
+        self.mock_page_range_text = patcher.start()
+        self.mock_page_range_text.return_value = 'This is the page_range text.'
+        self.addCleanup(patcher.stop)
+
+    def test_text_no_pages(self):
+        self.assertEqual(self.article.text, '')
+
+    def test_text_page(self):
+        self.article.pages = [self.page]
+        self.assertEqual(self.article.text, 'This is the page text.')
+
+    def test_text_page_range(self):
+        self.article.pages = [self.page_range]
+        self.assertEqual(self.article.text, 'This is the page_range text.')
+
+    def test_text_multiple_pages(self):
+        self.article.pages = [self.page, self.page_range]
+        self.assertEqual(
+            self.article.text,
+            'This is the page text.\nThis is the page_range text.')

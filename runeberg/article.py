@@ -16,6 +16,7 @@ advertisement might interrupt it.
 Note that some entries in Articles.lst are only used as Table of Content
 headers, as such they should not be treated as proper articles.
 """
+# @TODO: Handle sub-articles. See e.g. "register" http://runeberg.org/aoshbok/
 from bs4 import BeautifulSoup
 
 from runeberg.page_range import PageRange
@@ -83,6 +84,11 @@ class Article(object):
             text = soup.get_text()
             self._clean_title = text.strip()
         return self._clean_title
+
+    @property
+    def text(self):
+        """Return all the text of the article."""
+        return '\n'.join([page.text for page in self.pages])
 
     @property
     def uid(self):
