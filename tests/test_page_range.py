@@ -2,6 +2,7 @@
 """Unit tests for page_range."""
 import unittest
 
+from runeberg.page import Page
 from runeberg.page_range import PageRange
 
 
@@ -113,3 +114,19 @@ class TestLast(BaseTest):
 
     def test_last(self):
         self.assertEqual(self.pages.last(), 1)
+
+
+class TestText(unittest.TestCase):
+
+    """Test the text property."""
+
+    def test_text_empty(self):
+        pages = PageRange([])
+        self.assertEqual(pages.text, '')
+
+    def test_text(self):
+        pages = PageRange([
+            ('one', Page('page_1', text='text_1')),
+            ('two', Page('page_2', text='text_2')),
+            ('three', Page('page_3', text='text_3'))])
+        self.assertEqual(pages.text, 'text_1\ntext_2\ntext_3')

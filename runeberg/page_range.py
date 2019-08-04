@@ -49,6 +49,11 @@ class PageRange(OrderedDict):
         else:
             return '{}-{}'.format(key_list[0], key_list[-1])
 
+    @property
+    def text(self):
+        """Return the text from all the pages in the range."""
+        return '\n'.join([page.text for page in self.values()])
+
     # not implemented in __getitem__ to avoid it mixing keys and indexes
     # at the cost of a bulkier syntax
     def slice(self, start=None, stop=None, step=None):

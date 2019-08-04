@@ -418,3 +418,20 @@ class TestDetermineImageFileType(unittest.TestCase):
 
         self.work.determine_image_file_type('base', 'img')
         self.assertEquals(self.work.image_type, '.jpg')
+
+
+class TestText(unittest.TestCase):
+
+    """Unit tests for text property."""
+
+    def setUp(self):
+        self.work = Work('uid')
+
+    def test_text_no_pages(self):
+        self.assertEqual(self.work.text, '')
+
+    def test_text(self):
+        with mock.patch('runeberg.page_range.PageRange.text',
+                        new_callable=mock.PropertyMock) as mock_pagerange_text:
+            mock_pagerange_text.return_value = 'text in the page range'
+            self.assertEqual(self.work.text, 'text in the page range')
