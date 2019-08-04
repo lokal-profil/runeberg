@@ -6,7 +6,6 @@ from runeberg.page import Page
 
 
 class TestStr(unittest.TestCase):
-
     """Test the __str__() method."""
 
     def setUp(self):
@@ -17,7 +16,6 @@ class TestStr(unittest.TestCase):
 
 
 class TestGetChapters(unittest.TestCase):
-
     """Test the get_chapters() method."""
 
     def setUp(self):
@@ -70,7 +68,6 @@ class TestGetChapters(unittest.TestCase):
 
 
 class TestRenameChapter(unittest.TestCase):
-
     """Test the rename_chapter() method."""
 
     def setUp(self):
@@ -135,7 +132,6 @@ class TestRenameChapter(unittest.TestCase):
 
 
 class TestCheckBlank(unittest.TestCase):
-
     """Test the check_blank() method."""
 
     def setUp(self):
@@ -186,7 +182,6 @@ class TestCheckBlank(unittest.TestCase):
 
 
 class TestSetBlank(unittest.TestCase):
-
     """Test the set_blank() method."""
 
     def setUp(self):
@@ -215,7 +210,6 @@ class TestSetBlank(unittest.TestCase):
 
 
 class TestImageFileType(unittest.TestCase):
-
     """Test the image_file_type() method."""
 
     def setUp(self):

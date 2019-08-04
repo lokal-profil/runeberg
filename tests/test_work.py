@@ -17,23 +17,24 @@ from runeberg.work import (
 
 
 class PseudoDirEntry(object):
-
     """Class to mock DirEntry returned by os.scandir."""
 
     def __init__(self, name, is_file=True):
+        """Initialise a PseudoDirEntry."""
         self.name = name
         self.path = './somewhere/{}'.format(name)
         self._is_file = is_file
 
     def is_file(self):
+        """Fake is_file."""
         return self._is_file
 
     def __fspath__(self):
+        """Fake fspath."""
         return self.path
 
 
 class TestParseRange(unittest.TestCase):
-
     """Unit tests for parse_range."""
 
     def setUp(self):
@@ -74,7 +75,6 @@ class TestParseRange(unittest.TestCase):
 
 
 class TestLoadMetadata(unittest.TestCase):
-
     """Unit tests for load_metadata."""
 
     def setUp(self):
@@ -132,7 +132,6 @@ class TestLoadMetadata(unittest.TestCase):
 
 
 class TestParseMarc(unittest.TestCase):
-
     """Unit tests for parse_marc."""
 
     def setUp(self):
@@ -151,7 +150,6 @@ class TestParseMarc(unittest.TestCase):
 
 
 class TestParseImageSource(unittest.TestCase):
-
     """Unit tests for parse_image_source."""
 
     def setUp(self):
@@ -170,7 +168,6 @@ class TestParseImageSource(unittest.TestCase):
 
 
 class TestParseMultivaluedMappings(unittest.TestCase):
-
     """Unit tests for parse_multivalued_mappings."""
 
     def test_parse_multivalued_mappings_empty(self):
@@ -196,7 +193,6 @@ class TestParseMultivaluedMappings(unittest.TestCase):
 
 
 class TestSetupDisambiguationCounter(unittest.TestCase):
-
     """Unit tests for setup_disambiguation_counter."""
 
     def test_setup_disambiguation_counter_empty(self):
@@ -218,7 +214,8 @@ class TestSetupDisambiguationCounter(unittest.TestCase):
             Counter({'b': 1, 'c': 1}))
 
 
-class TestLoadArticle(unittest.TestCase):
+class TestLoadArticles(unittest.TestCase):
+    """Unit tests for load_articles."""
 
     def setUp(self):
         self.work = Work('Foo')
@@ -373,7 +370,6 @@ class TestLoadArticle(unittest.TestCase):
 
 # @TODO: Mock Page (and Article?)
 class TestReconciliationError(unittest.TestCase):
-
     """Tests for list construction in ReconciliationError."""
 
     def test_reconciliation_error_empty(self):
@@ -409,7 +405,6 @@ class TestReconciliationError(unittest.TestCase):
 
 
 class TestDetermineImageFileType(unittest.TestCase):
-
     """Unit tests for determine_image_file_type()."""
 
     def setUp(self):
@@ -450,7 +445,7 @@ class TestDetermineImageFileType(unittest.TestCase):
         self.mock_scandir_list.append(PseudoDirEntry('tests.bar'))
 
         with self.assertRaisesRegex(UnrecognisedImageTypeError,
-                                    '\.bar, \.foo'):
+                                    r'\.bar, \.foo'):
             self.work.determine_image_file_type('base', 'img')
 
     def test_determine_image_file_type_valid_file_ignore_second(self):
@@ -462,7 +457,6 @@ class TestDetermineImageFileType(unittest.TestCase):
 
 
 class TestText(unittest.TestCase):
-
     """Unit tests for text property."""
 
     def setUp(self):

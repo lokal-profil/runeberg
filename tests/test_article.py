@@ -9,7 +9,6 @@ from runeberg.page_range import PageRange
 
 
 class TestIsTocHeader(unittest.TestCase):
-
     """Test the is_toc_header() method."""
 
     def setUp(self):
@@ -25,7 +24,6 @@ class TestIsTocHeader(unittest.TestCase):
 
 
 class TestCleanTitle(unittest.TestCase):
-
     """Test the clean_title() method."""
 
     def test_clean_title_no_html(self):
@@ -38,7 +36,6 @@ class TestCleanTitle(unittest.TestCase):
 
 
 class TestUid(unittest.TestCase):
-
     """Test the is_toc_header() method."""
 
     def setUp(self):
@@ -54,6 +51,7 @@ class TestUid(unittest.TestCase):
 
 
 class TestText(unittest.TestCase):
+    """Test the text property."""
 
     def setUp(self):
         self.article = Article('Genesis')
