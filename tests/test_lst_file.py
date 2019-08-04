@@ -165,7 +165,6 @@ class TestParseLineFunc(unittest.TestCase):
 
 
 class TestFromStream(unittest.TestCase):
-
     """Test from_stream() method."""
 
     def setUp(self):

@@ -7,6 +7,8 @@ from runeberg.page_range import PageRange
 
 
 class BaseTest(unittest.TestCase):
+    """Shared setup for tests needing a PageRange instance."""
+
     def setUp(self):
         self.pages = PageRange([
             ('one', 3),
@@ -15,7 +17,6 @@ class BaseTest(unittest.TestCase):
 
 
 class TestIndex(BaseTest):
-
     """Test the index() method."""
 
     def test_index_empty(self):
@@ -38,7 +39,6 @@ class TestIndex(BaseTest):
 
 
 class TestStr(BaseTest):
-
     """Test the __str__() method."""
 
     def test_str_range(self):
@@ -59,7 +59,6 @@ class TestStr(BaseTest):
 
 
 class TestSlice(BaseTest):
-
     """Test the slice() method."""
 
     def test_slice_empty(self):
@@ -93,7 +92,6 @@ class TestSlice(BaseTest):
 
 
 class TestFirst(BaseTest):
-
     """Test the first() method."""
 
     def test_first_empty(self):
@@ -105,7 +103,6 @@ class TestFirst(BaseTest):
 
 
 class TestLast(BaseTest):
-
     """Test the last() method."""
 
     def test_last_empty(self):
@@ -117,7 +114,6 @@ class TestLast(BaseTest):
 
 
 class TestText(unittest.TestCase):
-
     """Test the text property."""
 
     def test_text_empty(self):
