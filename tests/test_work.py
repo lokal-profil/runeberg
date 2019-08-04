@@ -192,7 +192,7 @@ class TestParseMultivaluedMappings(unittest.TestCase):
     def test_parse_multivalued_mappings_duplicate(self):
         data = 'bibsys:123 bibsys:456'
         with self.assertRaisesRegex(NotImplementedError, r'a label'):
-            Work.parse_multivalued_mappings(data, 'a label'),
+            Work.parse_multivalued_mappings(data, 'a label')
 
 
 class TestSetupDisambiguationCounter(unittest.TestCase):
