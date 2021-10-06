@@ -55,7 +55,7 @@ def load_works():
 
 
 # @TODO: year based filter
-def filtered_work_generator(author=None, language=None, uid=None, **kargs):
+def filtered_work_generator(author=None, language=None, uid=None, **kwargs):
     """
     Generate works matching the provided filter.
 
@@ -75,7 +75,7 @@ def filtered_work_generator(author=None, language=None, uid=None, **kargs):
 
 
 # @TODO: year based filters
-def filtered_author_generator(nationality=None, uid=None, **kargs):
+def filtered_author_generator(nationality=None, uid=None, **kwargs):
     """
     Generate authors matching the provided filter.
 

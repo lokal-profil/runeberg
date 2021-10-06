@@ -43,7 +43,7 @@ class TestPager(unittest.TestCase):
 
         self.results = []
 
-        def generator(**kargs):
+        def generator(**kwargs):
             print('hello')
             for r in self.results:
                 print('hello %s' % r)
